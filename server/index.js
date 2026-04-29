@@ -21,12 +21,22 @@ const app    = express();
 const server = http.createServer(app); // wrap Express in a plain HTTP server for Socket.io
 const PORT   = process.env.PORT || 3001;
 
-// ── Allowed origin — set APP_URL in .env for production ───────
-const ALLOWED_ORIGIN = process.env.APP_URL || 'http://localhost:5173';
+// ── Allowed origins — comma-separated list in APP_URL env var ─
+// e.g. APP_URL=https://task-manager-jmdz.onrender.com,https://your-app.vercel.app
+const ALLOWED_ORIGINS = (process.env.APP_URL || 'http://localhost:5173')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const corsOrigin = (origin, callback) => {
+  // Allow requests with no origin (e.g. curl, Postman, same-origin server calls)
+  if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+  callback(new Error(`CORS: origin ${origin} not allowed`));
+};
 
 // ── Socket.io setup ───────────────────────────────────────────
 const io = new Server(server, {
-  cors: { origin: ALLOWED_ORIGIN, credentials: true },
+  cors: { origin: corsOrigin, credentials: true },
 });
 
 // Make io accessible inside controllers via req.app.get('io')
@@ -41,7 +51,7 @@ app.use(helmet({
 }));
 
 // ── CORS ──────────────────────────────────────────────────────
-app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 
 // ── Rate limiter: login endpoint ──────────────────────────────

@@ -27,17 +27,11 @@ export function SocketProvider({ user, children }) {
     // ── Open the socket connection ──────────────────────────────
     // auth.token is verified by the server before any events are accepted.
     //
-    // URL strategy:
-    //   • Development  — Vite dev server on :5173 proxies /socket.io → :3001
-    //     (see vite.config.js proxy entry). We connect to window.location.origin
-    //     (:5173) and the proxy forwards it transparently.
-    //   • Production (Render) — Express serves both the API and the built
-    //     React app from the same origin, so window.location.origin is the
-    //     correct Socket.io host with no proxy needed.
-    //
-    // This replaces the old hardcoded 'http://localhost:3001' which caused
-    // chat to silently fail in production (connecting to the user's own machine).
-    const socket = io(window.location.origin, {
+    // VITE_API_URL is set on Vercel to point at the Render backend.
+    // In dev it is unset, so we fall back to window.location.origin (proxied by Vite).
+    // On Render (full-stack), it is also unset, so window.location.origin is correct.
+    const SERVER_URL = import.meta.env.VITE_API_URL ?? window.location.origin;
+    const socket = io(SERVER_URL, {
       auth: { token },
       transports: ['websocket', 'polling'], // polling fallback for Render's network
     });
