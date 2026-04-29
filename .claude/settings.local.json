@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force)",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'c:\\\\Users\\\\GIDEON UGBEH\\\\Downloads\\\\Task-Manager-main\\\\server'; npm run dev\")",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'c:\\\\Users\\\\GIDEON UGBEH\\\\Downloads\\\\Task-Manager-main'; npm run dev\")"
+    ]
+  }
+}

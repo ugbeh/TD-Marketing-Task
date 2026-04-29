@@ -1,0 +1,22 @@
+# ── Environment secrets — NEVER commit these ──────────────────
+server/.env
+.env
+.env.local
+.env.production
+
+# ── Dependencies — reinstall with npm install ─────────────────
+node_modules/
+server/node_modules/
+
+# ── Build output ───────────────────────────────────────────────
+dist/
+build/
+
+# ── Uploaded user files (store on server, not in git) ─────────
+server/public/uploads/
+
+# ── OS / editor junk ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.vscode/

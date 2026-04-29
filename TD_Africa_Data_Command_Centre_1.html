@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TD Africa — Data Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --burg:#8F3030;--burg2:#A93A3A;--burg3:#6E2424;--burg-dim:#FDEAEA;
+  --gold:#C9973A;--gold2:#E0AE52;--gold-dim:#FDF6E8;
+  --charcoal:#363435;--gray:#848688;--gray-lt:#B0B2B4;
+  --bg:#FEFEFE;--bg2:#FFFFFF;--bg3:#F4F3F5;--bg4:#EBEAED;
+  --border:#E2E0E5;--border2:#D0CDD5;
+  --text:#2A2829;--text2:#5A5860;--text3:#918E98;
+  --teal:#0E8C88;--teal-d:#E6F6F5;
+  --blue:#3A6FD8;--blue-d:#E8EFF9;
+  --coral:#D05A2A;--coral-d:#FBF0EB;
+  --green:#22A55A;--green-d:#E8F7EF;
+  --red:#D63B3B;--red-d:#FCEAEA;
+  --pink:#C03A8A;--pink-d:#FAE8F3;
+  --purple:#7A50D0;--purple-d:#F0EAF9;
+  --amber:#C88A18;--amber-d:#FBF4E6;
+  --r:10px;--rs:6px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg);
+}
+body{display:flex;min-height:100vh;overflow:hidden}
+.syne{font-family:'Syne',sans-serif}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+#sb{width:222px;min-width:222px;background:#8F3030;border-right:none;display:flex;flex-direction:column;height:100vh;overflow:hidden;z-index:10}
+.logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.12)}
+.logo-ic{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.logo-t{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;letter-spacing:-.3px}
+.logo-s{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:10px 8px 6px;font-weight:500}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;color:rgba(255,255,255,0.7);font-size:13px;transition:all .15s;margin-bottom:1px}
+.ni:hover{background:rgba(255,255,255,0.1);color:#fff}
+.ni.on{background:rgba(255,255,255,0.18);color:#fff;font-weight:500}
+.ni svg{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.ni.on svg{opacity:1;color:#fff}
+.nbadge{margin-left:auto;background:rgba(255,255,255,0.22);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px;min-width:18px;text-align:center}
+.nbadge.b{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.85)}
+.sb-foot{padding:12px;border-top:1px solid rgba(255,255,255,0.15)}
+.upill{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:var(--rs);cursor:pointer;transition:background .15s}
+.upill:hover{background:rgba(255,255,255,0.1)}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;font-family:'Syne',sans-serif;flex-shrink:0}
+
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:54px;min-height:54px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.tb-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1;color:var(--charcoal)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--bg4);color:var(--text)}
+.btn-p{background:var(--burg)!important;color:#fff!important;border-color:var(--burg)!important}
+.btn-p:hover{background:var(--burg2)!important}
+.btn-danger{background:var(--red-d)!important;color:var(--red)!important;border-color:var(--red)!important}
+.btn-danger:hover{background:var(--red)!important;color:#fff!important}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.search{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;color:var(--text2);font-size:13px;min-width:200px}
+.search svg{width:13px;height:13px;opacity:.5;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:20px}
+.view{display:none}.view.on{display:block}
+
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.scard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.sl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.sv{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--charcoal)}
+.sd{font-size:11px;margin-top:4px}.sd.up{color:var(--green)}.sd.dn{color:var(--red)}
+.g23{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pt{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--charcoal)}
+.pa{font-size:12px;color:var(--text3);cursor:pointer;transition:color .15s}.pa:hover{color:var(--burg2)}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap;cursor:pointer}
+.p-act{background:var(--teal-d);color:var(--teal)}
+.p-rev{background:var(--amber-d);color:var(--amber)}
+.p-pln{background:var(--blue-d);color:var(--blue)}
+.p-don{background:var(--green-d);color:var(--green)}
+.p-drf{background:var(--purple-d);color:var(--purple)}
+.bar-w{background:var(--bg3);border-radius:4px;height:5px;overflow:hidden}
+.bar-f{height:100%;border-radius:4px}
+.crow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .1s}
+.crow:last-child{border-bottom:none}
+.crow:hover{background:var(--bg3);margin:0 -18px;padding:10px 18px;border-radius:var(--rs)}
+.cc{width:3px;height:32px;border-radius:2px;flex-shrink:0}
+.ci{flex:1;min-width:0}
+.cn{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.cm{font-size:11px;color:var(--text3)}
+.avs{display:flex;align-items:center}
+.avs .av{margin-left:-6px;border:1.5px solid var(--bg2);width:22px;height:22px;font-size:9px}
+.avs .av:first-child{margin-left:0}
+.dl-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.dl-item:last-child{border-bottom:none}
+.dl-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dl-info{flex:1}.dl-t{font-size:12px;color:var(--text);margin-bottom:2px}.dl-s{font-size:11px;color:var(--text3)}
+.dl-d{font-size:11px;font-weight:500;text-align:right;white-space:nowrap}
+.d-urg{color:var(--red)}.d-son{color:var(--amber)}.d-ok{color:var(--text3)}
+
+.kb-hd{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.ftabs{display:flex;gap:6px;flex-wrap:wrap}
+.ftab{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);color:var(--text2);transition:all .15s}
+.ftab:hover{color:var(--text);border-color:var(--border2)}
+.ftab.on{background:var(--burg-dim);border-color:var(--burg);color:var(--burg)}
+.kb{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:10px}
+.kcol{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-height:400px;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.kch{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);border-radius:var(--r) var(--r) 0 0;z-index:1}
+.ct{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;color:var(--charcoal)}
+.cdot{width:7px;height:7px;border-radius:50%}
+.cc2{font-size:10px;background:var(--bg4);color:var(--text3);border-radius:20px;padding:1px 7px}
+.cadd{width:20px;height:20px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .15s}
+.cadd:hover{background:var(--bg3);color:var(--text)}
+.cb{padding:10px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.tc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 12px;cursor:pointer;transition:all .15s;position:relative}
+.tc:hover{border-color:var(--border2);background:var(--bg4)}
+.tc.sel{border-color:var(--burg);box-shadow:0 0 0 1px var(--burg)}
+.tc-done{opacity:.6}
+.ttag{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;margin-bottom:7px;display:inline-block}
+.t-bu{background:var(--blue-d);color:var(--blue)}
+.t-bg{background:var(--teal-d);color:var(--teal)}
+.tt{font-size:13px;font-weight:500;color:var(--text);margin-bottom:7px;line-height:1.4}
+.tf{display:flex;align-items:center;gap:6px;margin-top:8px}
+.td2{font-size:10px;color:var(--text3);flex:1}
+.pd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ph2{background:var(--red)}.pm{background:var(--amber)}.pl{background:var(--green)}
+
+#dp{width:380px;min-width:380px;background:var(--bg2);border-left:1px solid var(--border);height:calc(100vh - 54px);overflow-y:auto;display:none;flex-direction:column}
+#dp.on{display:flex}
+.dp-h{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px}
+.dp-t{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);flex:1;line-height:1.4}
+.dp-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:var(--rs);cursor:pointer;color:var(--text3);transition:all .15s;flex-shrink:0;margin-top:2px}
+.dp-x:hover{background:var(--bg3);color:var(--text)}
+.dp-b{padding:16px 18px;flex:1}
+.ds{margin-bottom:18px}
+.dl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:500}
+.dv{font-size:13px;color:var(--text2);line-height:1.6}
+.al{display:flex;flex-direction:column;gap:7px}
+.ai{display:flex;align-items:center;gap:8px}
+.an{font-size:13px;color:var(--text)}.ar{font-size:10px;color:var(--text3)}
+.cli{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)}
+.cli:last-child{border-bottom:none}
+.cb2{width:14px;height:14px;border-radius:3px;border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cb2.ck{background:var(--green);border-color:var(--green)}.cb2.ck::after{content:'✓';font-size:9px;color:#fff}
+.cts.st{text-decoration:line-through;color:var(--text3)}
+.cmb{background:var(--bg3);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px}
+.cmt{font-size:11px;color:var(--text3);margin-bottom:4px}
+.cmx{font-size:12px;color:var(--text2);line-height:1.5}
+.act{display:flex;gap:9px;margin-bottom:10px;font-size:12px;color:var(--text3)}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--border2);margin-top:5px;flex-shrink:0}
+.dp-actions{display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);background:var(--bg2)}
+
+.tg3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:relative}
+.mc:hover{border-color:var(--burg);transform:translateY(-1px);box-shadow:0 4px 12px rgba(143,48,48,0.1)}
+.mt2{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mav{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0}
+.mn{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.mr{font-size:11px;color:var(--text3);margin-top:2px}
+.mst{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.msb{background:var(--bg3);border-radius:var(--rs);padding:8px;text-align:center}
+.msv{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--charcoal)}
+.msl{font-size:10px;color:var(--text3);margin-top:1px}
+.tml{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.tmi{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2)}
+.tmd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.cal-h{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-mo{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--charcoal)}
+.cal-btn2{width:28px;height:28px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s}
+.cal-btn2:hover{background:var(--bg3);color:var(--text)}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.cal-dh{background:var(--bg2);padding:8px;text-align:center;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.cal-c{background:var(--bg2);min-height:90px;padding:7px;cursor:pointer;transition:background .1s}
+.cal-c:hover{background:var(--bg3)}
+.cal-c.om .cal-d{color:var(--text3)}
+.cal-c.tod{background:var(--burg-dim)}
+.cal-d{font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.cal-c.tod .cal-d{color:var(--burg);font-weight:700}
+.cal-ev{font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.tl-wrap{overflow-x:auto;margin-top:20px}
+.tl-grid{min-width:900px}
+.tl-h{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid var(--border);margin-bottom:4px}
+.tl-lh{font-size:11px;color:var(--text3);padding:6px 12px}
+.tl-ms{display:grid;grid-template-columns:repeat(5,1fr)}
+.tl-m{font-size:10px;color:var(--text3);text-align:center;padding:6px 0;letter-spacing:.5px;text-transform:uppercase}
+.tl-r{display:grid;grid-template-columns:160px 1fr;margin-bottom:6px;align-items:center}
+.tl-rl{font-size:12px;color:var(--text2);padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-bs{position:relative;height:28px;display:flex;align-items:center}
+.tl-b{position:absolute;height:20px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:500;overflow:hidden;white-space:nowrap;cursor:pointer;transition:opacity .15s}
+.tl-b:hover{opacity:.85}
+
+.rg2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-wrap{position:relative;height:220px;width:100%}
+.chart-wrap-sm{position:relative;height:180px;width:100%}
+
+.nl{display:flex;flex-direction:column;gap:4px}
+.ni2{display:flex;gap:9px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;transition:background .1s}
+.ni2:hover{background:var(--bg3)}
+.ni2.unr{background:var(--burg-dim)}
+.nd{width:6px;height:6px;border-radius:50%;background:var(--burg);flex-shrink:0;margin-top:5px}
+.nd.r{background:transparent}
+.nc{flex:1}.nt{font-size:12px;color:var(--text);margin-bottom:2px;line-height:1.4}.ntm{font-size:10px;color:var(--text3)}
+
+.cc-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;transition:all .15s;position:relative;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.cc-card:hover{border-color:var(--burg);box-shadow:0 4px 12px rgba(143,48,48,0.08)}
+.cc-actions{position:absolute;top:14px;right:14px;display:flex;gap:6px;opacity:0;transition:opacity .15s}
+.cc-card:hover .cc-actions{opacity:1}
+
+input[type=text],input[type=number],textarea,select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;width:100%;transition:border-color .15s}
+input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{outline:none;border-color:var(--burg)}
+input[type=range]{width:100%;accent-color:var(--burg);cursor:pointer}
+textarea{min-height:72px;resize:vertical}
+select option{background:var(--bg2);color:var(--text)}
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px}
+.fr{margin-bottom:12px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px)}
+.modal-ov.open{display:flex}
+.md{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;width:520px;max-width:96vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.md-t{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px;color:var(--charcoal)}
+.md-s{font-size:12px;color:var(--text3);margin-bottom:18px}
+.md-f{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+.confirm-md{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:24px;width:360px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.confirm-icon{width:44px;height:44px;border-radius:50%;background:var(--red-d);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+
+.f{display:flex}.ic{align-items:center}.g8{gap:8px}.g6{gap:6px}.mla{margin-left:auto}
+.mt16{margin-top:16px}.t2{color:var(--text2)}.t3{color:var(--text3)}
+.xs{font-size:11px}.sm{font-size:12px}
+.tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg4);color:var(--text3)}
+.wf{width:100%}
+.ca{display:flex;flex:1;overflow:hidden;height:calc(100vh - 54px)}
+.ba{flex:1;overflow-y:auto;padding:20px}
+.wl-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.wl-lbl{font-size:12px;color:var(--text2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-bw{flex:1;background:var(--bg3);border-radius:3px;height:6px;overflow:hidden}
+.wl-b{height:100%;border-radius:3px}
+.wl-n{font-size:11px;color:var(--text3);width:26px;text-align:right;flex-shrink:0}
+.tc[draggable]{cursor:grab}
+.tc.dragging{opacity:.4;transform:scale(.97)}
+.kcol.drag-over{border-color:var(--burg)!important;background:rgba(143,48,48,.04)}
+.move-btn{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all .15s;white-space:nowrap}
+.move-btn:hover{background:var(--burg-dim);border-color:var(--burg);color:var(--burg)}
+.move-btn.current-col{background:var(--burg-dim);border-color:var(--burg);color:var(--burg);pointer-events:none}
+.collab-chip{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 4px;border-radius:20px;background:var(--bg4);border:1px solid var(--border);font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s;user-select:none}
+.collab-chip:hover{border-color:var(--border2);color:var(--text)}
+.collab-chip.tagged{background:var(--burg-dim);border-color:var(--burg);color:var(--burg)}
+.collab-chip .av{width:18px;height:18px;font-size:8px;flex-shrink:0}
+.collab-tag{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 4px;border-radius:20px;background:var(--burg-dim);border:1px solid var(--burg);font-size:11px;color:var(--burg)}
+.collab-tag .av{width:18px;height:18px;font-size:8px}
+.mc-edit-btn{position:absolute;top:12px;right:12px;opacity:0;transition:opacity .15s;padding:4px 8px;font-size:11px}
+.mc:hover .mc-edit-btn{opacity:1}
+</style>
+</head>
+<body>
+
+<nav id="sb">
+  <div class="logo">
+    <div class="f ic" style="gap:10px">
+      <img src="img/TD Africa_White boarder&wordmark.png" alt="TD Africa" style="width:34px;height:34px;border-radius:8px;object-fit:contain;">
+      <div><div class="logo-t">TD Africa</div><div class="logo-s">Data Hub</div></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-lbl">Workspace</div>
+    <div class="ni on" onclick="goNav('dashboard',this)"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
+    <div class="ni" onclick="goNav('projects',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="11" rx="1.5"/><path d="M1 6h14"/><circle cx="5" cy="9.5" r="1"/><circle cx="8" cy="9.5" r="1"/></svg>Projects<span class="nbadge" id="nb-camp">6</span></div>
+    <div class="ni" onclick="goNav('tasks',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>Task Board<span class="nbadge b" id="nb-task">18</span></div>
+    <div class="ni" onclick="goNav('team',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/><circle cx="12" cy="5" r="2"/><path d="M14 12.5c0-1.66-1.34-3-3-3"/></svg>Team</div>
+    <div class="ni" onclick="goNav('calendar',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="13" rx="1.5"/><path d="M1 6h14M5 1v3M11 1v3"/></svg>Calendar</div>
+    <div class="ni" onclick="goNav('timeline',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M8 1v14"/><circle cx="4" cy="5" r="1.5"/><circle cx="12" cy="11" r="1.5"/></svg>Timeline</div>
+    <div class="nav-lbl">Analytics</div>
+    <div class="ni" onclick="goNav('reports',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14V6l4-3 4 3V2l4 3"/><path d="M2 14h12"/></svg>Reports</div>
+    <div class="ni" onclick="goNav('notifs',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1a5 5 0 00-5 5v3L1 11h14l-2-2V6a5 5 0 00-5-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>Notifications<span class="nbadge">3</span></div>
+  </div>
+  <div class="sb-foot">
+    <div class="upill">
+      <div class="av" style="background:rgba(255,255,255,0.2);color:#fff">SO</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:#fff">Samuel</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.55)">Data Team Lead</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <div class="tb-title syne" id="tb-title">Overview</div>
+    <div class="f ic g8">
+      <div class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>Search tasks, projects...</div>
+      <button class="btn btn-sm" onclick="openTaskMo()"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v14M1 8h14"/></svg>New Task</button>
+      <button class="btn btn-p btn-sm" onclick="openCampMo()"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v14M1 8h14"/></svg>New Project</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="v-dashboard" class="view on">
+    <div class="content">
+      <div style="margin-bottom:20px">
+        <h1 class="syne" style="font-size:22px;font-weight:700;margin-bottom:4px;color:var(--charcoal)">Good morning, Samuel 👋</h1>
+        <p class="t2 sm">Here's what's happening across the data team today — <strong style="color:var(--burg)">3 deadlines</strong> approaching this week.</p>
+      </div>
+      <div class="stats4">
+        <div class="scard"><div class="sl">Ongoing Projects</div><div class="sv" id="dash-cnt">5</div><div class="sd up">↑ 2 from last month</div></div>
+        <div class="scard"><div class="sl">Open Tasks</div><div class="sv" id="dash-tasks">18</div><div class="sd dn">↑ 4 overdue</div></div>
+        <div class="scard"><div class="sl">Completed Projects</div><div class="sv" id="dash-done">3</div><div class="sd up">↑ 18% vs last month</div></div>
+        <div class="scard"><div class="sl">Team Utilization</div><div class="sv">82%</div><div class="sd up">Healthy range</div></div>
+      </div>
+      <div class="g23">
+        <div class="panel">
+          <div class="ph"><div class="pt">Ongoing Projects</div><div class="pa" onclick="goNav('projects',null)">View all →</div></div>
+          <div id="dash-camp-list"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="panel">
+            <div class="ph"><div class="pt">Upcoming Deadlines</div></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--red)"></div><div class="dl-info"><div class="dl-t">Power BI Inventory Dashboard</div><div class="dl-s">Data Analyst</div></div><div class="dl-d d-urg">Tomorrow</div></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div><div class="dl-info"><div class="dl-t">Weekly Snapshot Report</div><div class="dl-s">Data Analyst</div></div><div class="dl-d d-son">Mar 27</div></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--amber)"></div><div class="dl-info"><div class="dl-t">Data Migration Phase 2</div><div class="dl-s">Data Engineer</div></div><div class="dl-d d-son">Mar 28</div></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--blue)"></div><div class="dl-info"><div class="dl-t">Process Automation Review</div><div class="dl-s">Data Team Lead</div></div><div class="dl-d d-ok">Apr 1</div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><div class="pt">Quick Actions</div></div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <button class="btn wf" style="justify-content:flex-start" onclick="openTaskMo()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14"/></svg>Create New Task</button>
+              <button class="btn wf" style="justify-content:flex-start" onclick="openCampMo()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="11" rx="1.5"/></svg>Launch Project</button>
+              <button class="btn wf" style="justify-content:flex-start" onclick="goNav('reports',null)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12V4l4 4 3-5 3 4 2-2"/></svg>View Reports</button>
+              <button class="btn wf" style="justify-content:flex-start" onclick="goNav('team',null)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5"/></svg>Manage Team</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel mt16">
+        <div class="ph"><div class="pt">Team Workload — Active Tasks per Member</div><div class="pa" onclick="goNav('team',null)">Manage →</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="wl-item"><div class="wl-lbl">Samuel O.</div><div class="wl-bw"><div class="wl-b" style="width:70%;background:var(--burg)"></div></div><div class="wl-n">7</div></div>
+            <div class="wl-item"><div class="wl-lbl">Toluwalase G.</div><div class="wl-bw"><div class="wl-b" style="width:80%;background:var(--blue)"></div></div><div class="wl-n">8</div></div>
+            <div class="wl-item"><div class="wl-lbl">Sharon O.</div><div class="wl-bw"><div class="wl-b" style="width:60%;background:var(--teal)"></div></div><div class="wl-n">6</div></div>
+          </div>
+          <div>
+            <div class="wl-item"><div class="wl-lbl">John O.</div><div class="wl-bw"><div class="wl-b" style="width:90%;background:var(--purple)"></div></div><div class="wl-n">9</div></div>
+            <div class="wl-item"><div class="wl-lbl">Deborah I.</div><div class="wl-bw"><div class="wl-b" style="width:50%;background:var(--amber)"></div></div><div class="wl-n">5</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS (was Campaigns) -->
+  <div id="v-projects" class="view">
+    <div class="content">
+      <div class="f ic g8" style="margin-bottom:16px">
+        <div><h2 class="syne" style="font-size:18px;margin-bottom:4px;color:var(--charcoal)">Project Management</h2><p class="t2 sm">Track all projects across the data team.</p></div>
+        <div class="mla"><button class="btn btn-p btn-sm" onclick="openCampMo()"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1v14M1 8h14"/></svg>New Project</button></div>
+      </div>
+      <div id="camp-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"></div>
+    </div>
+  </div>
+
+  <!-- TASK BOARD -->
+  <div id="v-tasks" class="view" style="overflow:hidden;display:none">
+    <div class="ca">
+      <div class="ba">
+        <div class="kb-hd">
+          <div class="ftabs" id="ftabs">
+            <div class="ftab on" data-filter="all">All Tasks</div>
+            <div class="ftab" data-filter="bu">BU</div>
+            <div class="ftab" data-filter="bg">BG</div>
+          </div>
+          <div class="mla f g8"><button class="btn btn-p btn-sm" onclick="openTaskMo()">+ Add Task</button></div>
+        </div>
+        <div class="kb" id="kb-board">
+          <div class="kcol" id="kcol-backlog" ondragover="onDragOver(event)" ondrop="onDrop(event,'backlog')" ondragleave="onDragLeave(event)"><div class="kch"><div class="ct"><div class="cdot" style="background:var(--gray)"></div>Backlog<span class="cc2" id="cnt-backlog">0</span></div><div class="cadd" onclick="openTaskMo('backlog')">+</div></div><div class="cb" id="col-backlog"></div></div>
+          <div class="kcol" id="kcol-progress" ondragover="onDragOver(event)" ondrop="onDrop(event,'progress')" ondragleave="onDragLeave(event)"><div class="kch"><div class="ct"><div class="cdot" style="background:var(--blue)"></div>In Progress<span class="cc2" id="cnt-progress">0</span></div><div class="cadd" onclick="openTaskMo('progress')">+</div></div><div class="cb" id="col-progress"></div></div>
+          <div class="kcol" id="kcol-review" ondragover="onDragOver(event)" ondrop="onDrop(event,'review')" ondragleave="onDragLeave(event)"><div class="kch"><div class="ct"><div class="cdot" style="background:var(--amber)"></div>In Review<span class="cc2" id="cnt-review">0</span></div><div class="cadd" onclick="openTaskMo('review')">+</div></div><div class="cb" id="col-review"></div></div>
+          <div class="kcol" id="kcol-approved" ondragover="onDragOver(event)" ondrop="onDrop(event,'approved')" ondragleave="onDragLeave(event)"><div class="kch"><div class="ct"><div class="cdot" style="background:var(--purple)"></div>Approved<span class="cc2" id="cnt-approved">0</span></div><div class="cadd" onclick="openTaskMo('approved')">+</div></div><div class="cb" id="col-approved"></div></div>
+          <div class="kcol" id="kcol-done" ondragover="onDragOver(event)" ondrop="onDrop(event,'done')" ondragleave="onDragLeave(event)"><div class="kch"><div class="ct"><div class="cdot" style="background:var(--green)"></div>Done<span class="cc2" id="cnt-done">0</span></div></div><div class="cb" id="col-done"></div></div>
+        </div>
+      </div>
+      <div id="dp">
+        <div class="dp-h"><div class="dp-t" id="dp-title">Task</div><div class="dp-x" onclick="closeDp()">✕</div></div>
+        <div class="dp-b">
+          <div class="ds"><div class="dl">Description</div><div class="dv" id="dp-desc"></div></div>
+          <div class="ds"><div class="dl">Move To Column</div><div class="f g6" style="flex-wrap:wrap" id="dp-move-btns"></div></div>
+          <div class="ds"><div class="dl">Priority</div><select id="dp-priority" onchange="changeTaskPriority()" style="font-size:12px"><option value="h">🔴 High</option><option value="m">🟡 Medium</option><option value="l">🟢 Low</option></select></div>
+          <div class="ds"><div class="dl">Assignee</div><div class="f ic g8"><div class="av" id="dp-av" style="width:28px;height:28px;font-size:11px"></div><div><div id="dp-assignee-name" class="an"></div><div id="dp-assignee-role" class="ar"></div></div></div></div>
+          <div class="ds"><div class="dl">Collaborators <span style="color:var(--text3);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0">— click to add/remove</span></div><div id="dp-collabs" class="f g6" style="flex-wrap:wrap;margin-bottom:8px"></div><div class="f g6" style="flex-wrap:wrap" id="dp-collab-picker"></div></div>
+          <div class="ds"><div class="dl">Due Date</div><div class="dv" id="dp-due"></div></div>
+          <div class="ds"><div class="dl">Project</div><div class="dv" id="dp-campaign"></div></div>
+          <div class="ds">
+            <div class="dl">Checklist</div>
+            <div class="cli"><div class="cb2 ck" onclick="this.classList.toggle('ck');this.nextElementSibling.classList.toggle('st')"></div><span class="cts st">Data source identified</span></div>
+            <div class="cli"><div class="cb2 ck" onclick="this.classList.toggle('ck');this.nextElementSibling.classList.toggle('st')"></div><span class="cts st">Schema validated</span></div>
+            <div class="cli"><div class="cb2" onclick="this.classList.toggle('ck');this.nextElementSibling.classList.toggle('st')"></div><span class="cts">Transformations applied</span></div>
+            <div class="cli"><div class="cb2" onclick="this.classList.toggle('ck');this.nextElementSibling.classList.toggle('st')"></div><span class="cts">QA / data validation passed</span></div>
+            <div class="cli"><div class="cb2" onclick="this.classList.toggle('ck');this.nextElementSibling.classList.toggle('st')"></div><span class="cts">Deployed to production</span></div>
+          </div>
+          <div class="ds">
+            <div class="dl">Comments</div>
+            <div class="cmb"><div class="cmt">Samuel · 2h ago</div><div class="cmx">Ensure the DAX measures match the agreed KPI definitions before publishing.</div></div>
+            <textarea placeholder="Add a comment..." style="margin-top:8px;font-size:12px"></textarea>
+            <button class="btn btn-p btn-sm" style="margin-top:6px">Post Comment</button>
+          </div>
+          <div class="ds"><div class="dl">Activity</div><div class="act"><div class="adot"></div><span>Task created and assigned · Today</span></div></div>
+        </div>
+        <div class="dp-actions">
+          <button class="btn btn-sm wf" onclick="openEditTaskMo()" style="justify-content:center">✏️ Edit Task</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteTask()" style="justify-content:center">🗑 Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div id="v-team" class="view">
+    <div class="content">
+      <div style="margin-bottom:16px"><h2 class="syne" style="font-size:18px;margin-bottom:4px;color:var(--charcoal)">Data Team</h2><p class="t2 sm">5 members across 4 roles · Manage assignments and performance.</p></div>
+      <div class="tg3" id="team-grid"></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="v-calendar" class="view">
+    <div class="content">
+      <div class="cal-h"><div class="cal-nav"><div class="cal-btn2">‹</div><div class="cal-mo syne">March 2025</div><div class="cal-btn2">›</div></div><div class="mla f g8"><button class="btn btn-sm">Month</button><button class="btn btn-sm">Week</button><button class="btn btn-p btn-sm">+ Event</button></div></div>
+      <div class="cal-g">
+        <div class="cal-dh">Sun</div><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div><div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div>
+        <div class="cal-c om"><div class="cal-d">23</div></div><div class="cal-c om"><div class="cal-d">24</div></div><div class="cal-c om"><div class="cal-d">25</div></div><div class="cal-c om"><div class="cal-d">26</div></div><div class="cal-c om"><div class="cal-d">27</div></div><div class="cal-c om"><div class="cal-d">28</div></div>
+        <div class="cal-c"><div class="cal-d">1</div><div class="cal-ev" style="background:var(--teal-d);color:var(--teal)">Data Migration Kickoff</div></div>
+        <div class="cal-c"><div class="cal-d">2</div></div><div class="cal-c"><div class="cal-d">3</div><div class="cal-ev" style="background:var(--blue-d);color:var(--blue)">Power BI Sprint Start</div></div>
+        <div class="cal-c"><div class="cal-d">4</div></div><div class="cal-c"><div class="cal-d">5</div><div class="cal-ev" style="background:var(--purple-d);color:var(--purple)">Data Quality Review</div></div>
+        <div class="cal-c"><div class="cal-d">6</div></div><div class="cal-c"><div class="cal-d">7</div></div><div class="cal-c"><div class="cal-d">8</div></div><div class="cal-c"><div class="cal-d">9</div></div>
+        <div class="cal-c"><div class="cal-d">10</div><div class="cal-ev" style="background:var(--amber-d);color:var(--amber)">ETL Pipeline Review</div></div>
+        <div class="cal-c"><div class="cal-d">11</div></div><div class="cal-c"><div class="cal-d">12</div><div class="cal-ev" style="background:var(--coral-d);color:var(--coral)">Stakeholder Demo</div></div>
+        <div class="cal-c"><div class="cal-d">13</div></div><div class="cal-c"><div class="cal-d">14</div></div>
+        <div class="cal-c"><div class="cal-d">15</div><div class="cal-ev" style="background:var(--green-d);color:var(--green)">Dashboard Go-Live</div></div>
+        <div class="cal-c"><div class="cal-d">16</div></div><div class="cal-c"><div class="cal-d">17</div></div>
+        <div class="cal-c"><div class="cal-d">18</div><div class="cal-ev" style="background:var(--purple-d);color:var(--purple)">Automation Sprint</div></div>
+        <div class="cal-c"><div class="cal-d">19</div></div><div class="cal-c"><div class="cal-d">20</div><div class="cal-ev" style="background:var(--teal-d);color:var(--teal)">Migration Phase 2</div></div>
+        <div class="cal-c"><div class="cal-d">21</div></div><div class="cal-c"><div class="cal-d">22</div></div>
+        <div class="cal-c tod"><div class="cal-d">24</div><div class="cal-ev" style="background:var(--burg-dim);color:var(--burg)">Weekly Sync</div><div class="cal-ev" style="background:var(--red-d);color:var(--red)">Inventory Dash DUE</div></div>
+        <div class="cal-c"><div class="cal-d">25</div></div><div class="cal-c"><div class="cal-d">26</div><div class="cal-ev" style="background:var(--blue-d);color:var(--blue)">Sales Dash Review</div></div>
+        <div class="cal-c"><div class="cal-d">27</div><div class="cal-ev" style="background:var(--amber-d);color:var(--amber)">Snapshot Report DUE</div></div>
+        <div class="cal-c"><div class="cal-d">28</div></div><div class="cal-c"><div class="cal-d">29</div></div>
+        <div class="cal-c"><div class="cal-d">30</div><div class="cal-ev" style="background:var(--green-d);color:var(--green)">Process Automation</div></div>
+        <div class="cal-c"><div class="cal-d">31</div></div>
+        <div class="cal-c om"><div class="cal-d">1</div></div><div class="cal-c om"><div class="cal-d">2</div></div><div class="cal-c om"><div class="cal-d">3</div></div><div class="cal-c om"><div class="cal-d">4</div></div><div class="cal-c om"><div class="cal-d">5</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div id="v-timeline" class="view">
+    <div class="content">
+      <div style="margin-bottom:16px"><h2 class="syne" style="font-size:18px;margin-bottom:4px;color:var(--charcoal)">Project Timeline</h2><p class="t2 sm">Gantt-style overview of all active projects — Q1/Q2 2025.</p></div>
+      <div class="panel">
+        <div class="tl-wrap"><div class="tl-grid">
+          <div class="tl-h"><div class="tl-lh">Project</div><div class="tl-ms"><div class="tl-m">Feb</div><div class="tl-m">Mar</div><div class="tl-m">Apr</div><div class="tl-m">May</div><div class="tl-m">Jun</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Data Migration</div><div class="tl-bs"><div class="tl-b" style="left:20%;width:50%;background:var(--teal-d);color:var(--teal);border:1px solid var(--teal)">Data Migration</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Power BI Inventory</div><div class="tl-bs"><div class="tl-b" style="left:22%;width:25%;background:var(--blue-d);color:var(--blue);border:1px solid var(--blue)">Inventory Dash</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Power BI Sales</div><div class="tl-bs"><div class="tl-b" style="left:24%;width:45%;background:var(--amber-d);color:var(--amber);border:1px solid var(--amber)">Sales Dash</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Power BI Customer Perf.</div><div class="tl-bs"><div class="tl-b" style="left:42%;width:40%;background:var(--coral-d);color:var(--coral);border:1px solid var(--coral)">Customer Perf.</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Weekly Snapshot</div><div class="tl-bs"><div class="tl-b" style="left:5%;width:80%;background:var(--purple-d);color:var(--purple);border:1px solid var(--purple)">Ongoing</div></div></div>
+          <div class="tl-r"><div class="tl-rl">Process Automation</div><div class="tl-bs"><div class="tl-b" style="left:30%;width:50%;background:var(--green-d);color:var(--green);border:1px solid var(--green)">Automation</div></div></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div id="v-reports" class="view">
+    <div class="content">
+      <div style="margin-bottom:20px">
+        <h2 class="syne" style="font-size:18px;margin-bottom:4px;color:var(--charcoal)">Reports & Analytics</h2>
+        <p class="t2 sm">Data team performance metrics — March 2025</p>
+      </div>
+      <div class="stats4" style="margin-bottom:20px">
+        <div class="scard"><div class="sl">Dashboards Delivered</div><div class="sv">12</div><div class="sd up">↑ 3 MoM</div></div>
+        <div class="scard"><div class="sl">Data Pipelines Active</div><div class="sv">34</div><div class="sd up">↑ 6 MoM</div></div>
+        <div class="scard"><div class="sl">Avg Query Performance</div><div class="sv">1.2s</div><div class="sd up">↓ 0.4s improved</div></div>
+        <div class="scard"><div class="sl">Data Quality Score</div><div class="sv">96.4%</div><div class="sd up">↑ 1.8pp MoM</div></div>
+      </div>
+      <div class="rg2" style="margin-bottom:16px">
+        <div class="panel">
+          <div class="ph"><div class="pt">Dashboards Delivered — Last 6 Months</div><span class="xs t3">Count</span></div>
+          <div class="chart-wrap"><canvas id="chartTraffic"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div class="pt">Task Status Breakdown</div><span class="xs t3" id="tasks-total-lbl"></span></div>
+          <div class="chart-wrap"><canvas id="chartTasks"></canvas></div>
+        </div>
+      </div>
+      <div class="rg2" style="margin-bottom:16px">
+        <div class="panel">
+          <div class="ph"><div class="pt">Pipeline Runs by Type</div><span class="xs t3">March 2025</span></div>
+          <div class="chart-wrap"><canvas id="chartSocial"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div class="pt">Data Quality Trend — Weekly</div><span class="xs t3">Q1 2025</span></div>
+          <div class="chart-wrap"><canvas id="chartLeads"></canvas></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="ph"><div class="pt">Project Progress Overview</div><span class="xs t3">% complete</span></div>
+        <div style="height:200px"><canvas id="chartCamps"></canvas></div>
+      </div>
+      <div class="rg2">
+        <div class="panel">
+          <div class="ph"><div class="pt">Data Coverage by Domain</div><span class="xs t3">March 2025</span></div>
+          <div class="chart-wrap-sm"><canvas id="chartSeo"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><div class="pt">Deliverables by Type</div><span class="xs t3">March 2025</span></div>
+          <div class="chart-wrap-sm"><canvas id="chartContent"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div id="v-notifs" class="view">
+    <div class="content" style="max-width:680px">
+      <div class="f ic g8" style="margin-bottom:16px"><h2 class="syne" style="font-size:18px;color:var(--charcoal)">Notifications</h2><span class="nbadge" style="background:var(--burg);color:#fff">3</span><div class="mla"><button class="btn btn-sm">Mark all read</button></div></div>
+      <div class="nl">
+        <div class="ni2 unr"><div class="nd"></div><div class="nc"><div class="nt">Toluwalase completed <strong>Power BI Inventory Dashboard</strong> draft — ready for review.</div><div class="ntm">15 minutes ago</div></div></div>
+        <div class="ni2 unr"><div class="nd"></div><div class="nc"><div class="nt">Sharon submitted <strong>Data Migration Phase 1 validation</strong> report. All checks passed.</div><div class="ntm">1 hour ago</div></div></div>
+        <div class="ni2 unr"><div class="nd"></div><div class="nc"><div class="nt"><strong>Deadline Tomorrow:</strong> Power BI Inventory Dashboard is due March 25. Assigned to Toluwalase.</div><div class="ntm">3 hours ago</div></div></div>
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <div class="ni2"><div class="nd r"></div><div class="nc"><div class="nt">John completed <strong>Weekly Snapshot ETL pipeline</strong> — automated run successful.</div><div class="ntm">Yesterday, 4:30 PM</div></div></div>
+        <div class="ni2"><div class="nd r"></div><div class="nc"><div class="nt">Deborah moved <strong>Customer Data Cleanup</strong> to Done. 4,200 records processed.</div><div class="ntm">Yesterday, 2:15 PM</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div id="task-mo" class="modal-ov">
+  <div class="md">
+    <div class="md-t" id="task-mo-title">Create New Task</div>
+    <div class="md-s">Add a task to the board and assign it to the right team member.</div>
+    <div class="fr"><label>Task Title *</label><input type="text" id="ti" placeholder="e.g. Build DAX measures for sales report"></div>
+    <div class="fr"><label>Description</label><textarea id="tdesc" placeholder="What needs to be done? Data sources, transformations, deliverables..."></textarea></div>
+    <div class="fg">
+      <div class="fr"><label>Project</label><select id="tc"><option value="Data Migration">Data Migration</option><option value="Power BI Inventory Dashboard">Power BI Inventory Dashboard</option><option value="Power BI Sales Dashboard">Power BI Sales Dashboard</option><option value="Power BI Customer Performance Dashboard">Power BI Customer Performance Dashboard</option><option value="Weekly Snapshot">Weekly Snapshot</option><option value="Process Automation">Process Automation</option><option value="—">— No Project —</option></select></div>
+      <div class="fr"><label>Department</label><select id="tdept"><option value="bu">BU</option><option value="bg">BG</option></select></div>
+      <div class="fr"><label>Assigned To</label><select id="tass"><option value="SO">Samuel — Data Team Lead</option><option value="TG">Toluwalase — Data Analyst</option><option value="SA">Sharon — Data Analyst</option><option value="JA">John — Data Engineer</option><option value="DO">Deborah — Data Analyst</option></select></div>
+      <div class="fr">
+        <label>Collaborators <span style="color:var(--text3);font-weight:400;font-size:11px">— select team members to tag</span></label>
+        <div id="modal-collab-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+      </div>
+      <div class="fr"><label>Priority</label><select id="tpri"><option value="h">High</option><option value="m">Medium</option><option value="l">Low</option></select></div>
+      <div class="fr"><label>Due Date</label><input type="text" id="tdue" placeholder="e.g. Apr 5"></div>
+      <div class="fr"><label>Status (Column)</label><select id="tstat"><option value="backlog">Backlog</option><option value="progress">In Progress</option><option value="review">In Review</option><option value="approved">Approved</option></select></div>
+    </div>
+    <div class="md-f"><button class="btn" onclick="closeTaskMo()">Cancel</button><button class="btn btn-p" id="task-mo-btn" onclick="submitTaskMo()">Create Task</button></div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div id="camp-mo" class="modal-ov">
+  <div class="md">
+    <div class="md-t" id="camp-mo-title">Launch New Project</div>
+    <div class="md-s">Define project details, scope, team members and timeline.</div>
+    <div class="fr"><label>Project Name *</label><input type="text" id="cname" placeholder="e.g. Power BI Finance Dashboard"></div>
+    <div class="fr"><label>Description / Goals</label><textarea id="cdesc" placeholder="Goals, data sources, stakeholders, KPIs..."></textarea></div>
+    <div class="fg">
+      <div class="fr"><label>Project Type</label><select id="ctype"><option>Dashboard / Report</option><option>Data Migration</option><option>ETL Pipeline</option><option>Process Automation</option><option>Data Cleanup</option><option>Analytics</option><option>Integrated</option></select></div>
+      <div class="fr"><label>Status</label><select id="cstat"><option value="planning">Planning</option><option value="active">Active</option><option value="review">In Review</option><option value="draft">Draft</option></select></div>
+      <div class="fr"><label>Start Date</label><input type="text" id="cstart" placeholder="e.g. Apr 1, 2025"></div>
+      <div class="fr"><label>End / Due Date</label><input type="text" id="cend" placeholder="e.g. May 30, 2025"></div>
+      <div class="fr"><label>Project Lead</label><select id="clead"><option value="SO">Samuel — Data Team Lead</option><option value="TG">Toluwalase — Data Analyst</option><option value="SA">Sharon — Data Analyst</option><option value="JA">John — Data Engineer</option><option value="DO">Deborah — Data Analyst</option></select></div>
+      <div class="fr"><label>Progress % <span id="cpct-lbl">0%</span></label><input type="range" id="cpct" min="0" max="100" value="0" oninput="document.getElementById('cpct-lbl').textContent=this.value+'%'"></div>
+    </div>
+    <div class="fr">
+      <label>Departments Involved</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px" id="depts">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer"><input type="checkbox" value="BU" checked> BU</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer"><input type="checkbox" value="BG"> BG</label>
+      </div>
+    </div>
+    <div class="md-f"><button class="btn" onclick="closeCampMo()">Cancel</button><button class="btn btn-p" id="camp-mo-btn" onclick="submitCampMo()">Launch Project</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div id="confirm-mo" class="modal-ov">
+  <div class="confirm-md">
+    <div class="confirm-icon"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="var(--red)" stroke-width="1.8"><path d="M8 3v5M8 10v1"/><circle cx="8" cy="8" r="7"/></svg></div>
+    <div class="syne" style="font-size:16px;font-weight:700;margin-bottom:8px;color:var(--charcoal)" id="confirm-title">Delete this task?</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px" id="confirm-body">This action cannot be undone.</p>
+    <div class="f g8" style="justify-content:flex-end">
+      <button class="btn btn-sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok-btn" onclick="executeConfirm()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBER EDIT MODAL -->
+<div id="member-mo" class="modal-ov">
+  <div class="md" style="width:460px">
+    <div class="md-t">Edit Team Member</div>
+    <div class="md-s">Update member details, role and current tasks.</div>
+    <input type="hidden" id="m-key">
+    <div class="fg">
+      <div class="fr"><label>Name *</label><input type="text" id="m-name" placeholder="e.g. Samuel"></div>
+      <div class="fr"><label>Role / Title *</label><input type="text" id="m-role" placeholder="e.g. Data Team Lead"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label>Status</label><select id="m-status"><option value="Online">🟢 Online</option><option value="Away">🟡 Away</option><option value="In Meeting">📞 In Meeting</option><option value="Focused">🎯 Focused</option><option value="Out of Office">🏖 Out of Office</option></select></div>
+      <div class="fr"><label>Active Tasks Count</label><input type="number" id="m-active" min="0" max="99" placeholder="0"></div>
+    </div>
+    <div class="fr"><label>Current Task 1</label><input type="text" id="m-task1" placeholder="e.g. Power BI Sales Dashboard"></div>
+    <div class="fr"><label>Current Task 2</label><input type="text" id="m-task2" placeholder="e.g. ETL Pipeline Optimization"></div>
+    <div class="fr"><label>Current Task 3</label><input type="text" id="m-task3" placeholder="e.g. Data Validation Script"></div>
+    <div class="md-f">
+      <button class="btn" onclick="closeMemberMo()">Cancel</button>
+      <button class="btn btn-p" onclick="saveMember()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PILL={planning:'p-pln',active:'p-act',review:'p-rev',draft:'p-drf',done:'p-don'};
+const PLBL={planning:'Planning',active:'Active',review:'In Review',draft:'Draft',done:'Done'};
+const ACOLS=['--teal','--amber','--blue','--coral','--purple','--green'];
+const MCOL={SO:'burg',TG:'blue',SA:'teal',JA:'purple',DO:'amber'};
+const MNAME={SO:'Samuel',TG:'Toluwalase',SA:'Sharon',JA:'John',DO:'Deborah'};
+const MROLE={SO:'Data Team Lead',TG:'Data Analyst',SA:'Data Analyst',JA:'Data Engineer',DO:'Data Analyst'};
+const DCOL={bu:'t-bu',bg:'t-bg'};
+const DLBL={bu:'BU',bg:'BG'};
+const PCLASS={h:'ph2',m:'pm',l:'pl'};
+const COL_STAT=['backlog','progress','review','approved','done'];
+
+let camps=[
+  {id:1,name:'Data Migration',type:'Data Migration',start:'Mar 1',due:'May 15',status:'active',pct:55,color:'--teal',members:['SO','JA','SA'],tags:['BU','BG','ETL','SQL Server'],urgent:2,open:8},
+  {id:2,name:'Power BI Inventory Dashboard',type:'Dashboard / Report',start:'Mar 10',due:'Mar 25',status:'active',pct:78,color:'--blue',members:['TG','SA'],tags:['BU','Power BI','DAX'],open:4},
+  {id:3,name:'Power BI Sales Dashboard',type:'Dashboard / Report',start:'Mar 5',due:'Apr 10',status:'active',pct:42,color:'--amber',members:['TG','DO'],tags:['BU','Power BI','Sales Data'],open:6},
+  {id:4,name:'Power BI Customer Performance Dashboard',type:'Dashboard / Report',start:'Apr 1',due:'May 20',status:'planning',pct:10,color:'--coral',members:['SO','TG'],tags:['BG','Power BI','CRM Data'],open:3},
+  {id:5,name:'Weekly Snapshot',type:'ETL Pipeline',start:'Feb 15',due:'Ongoing',status:'active',pct:90,color:'--purple',members:['JA','DO'],tags:['BU','BG','Automated','SQL'],open:2},
+  {id:6,name:'Process Automation',type:'Process Automation',start:'Mar 18',due:'May 30',status:'draft',pct:8,color:'--green',members:['JA','SO'],tags:['BG','Python','Power Automate'],open:5},
+];
+let campIdSeq=7;
+
+let tasks=[
+  {id:1,title:'Map legacy database schema for migration',desc:'Document all tables, relationships and data types in the legacy SQL Server database. Identify transformation rules for the new schema.',dept:'bu',ass:'JA',pri:'h',due:'Mar 28',status:'backlog',camp:'Data Migration',collabs:['SA']},
+  {id:2,title:'Write ETL scripts for customer master data',desc:'Build Python ETL scripts to extract, transform and load customer master data from legacy to new system. Include data validation checks.',dept:'bg',ass:'JA',pri:'m',due:'Apr 5',status:'backlog',camp:'Data Migration',collabs:[]},
+  {id:3,title:'Define KPIs for Customer Performance Dashboard',desc:'Work with BG stakeholders to define key customer performance metrics: retention rate, lifetime value, purchase frequency, satisfaction score.',dept:'bg',ass:'SO',pri:'m',due:'Apr 8',status:'backlog',camp:'Power BI Customer Performance Dashboard',collabs:['TG']},
+  {id:4,title:'Set up Power Automate flow for weekly email reports',desc:'Create Power Automate flow that triggers every Monday 7AM to generate and email the weekly snapshot PDF to all BU heads.',dept:'bg',ass:'JA',pri:'l',due:'Apr 12',status:'backlog',camp:'Process Automation',collabs:[]},
+  {id:5,title:'Build DAX measures for Inventory Dashboard',desc:'Create DAX measures for stock turnover rate, days of supply, reorder point alerts, and inventory aging analysis. Validate against source data.',dept:'bu',ass:'TG',pri:'h',due:'Mar 25',status:'progress',camp:'Power BI Inventory Dashboard',collabs:['SA']},
+  {id:6,title:'Create data model for Sales Dashboard',desc:'Design star schema data model in Power BI for sales data. Link fact_sales to dim_product, dim_customer, dim_date, dim_region tables.',dept:'bu',ass:'TG',pri:'h',due:'Mar 30',status:'progress',camp:'Power BI Sales Dashboard',collabs:['DO']},
+  {id:7,title:'Validate migrated inventory records — Batch 1',desc:'Run validation queries on the first batch of 15,000 migrated inventory records. Compare row counts, checksums and sample records against source.',dept:'bu',ass:'SA',pri:'m',due:'Mar 29',status:'progress',camp:'Data Migration',collabs:[]},
+  {id:8,title:'Optimize Weekly Snapshot SQL queries',desc:'Current snapshot query takes 45s. Target: under 10s. Profile query execution plan, add indexes, refactor subqueries to CTEs.',dept:'bu',ass:'JA',pri:'m',due:'Apr 3',status:'progress',camp:'Weekly Snapshot',collabs:['SO']},
+  {id:9,title:'Clean and standardize customer address data',desc:'Standardize 8,400 customer address records: normalize state names, fix ZIP codes, remove duplicates, validate against postal database.',dept:'bg',ass:'DO',pri:'m',due:'Mar 28',status:'progress',camp:'Data Migration',collabs:[]},
+  {id:10,title:'Review Inventory Dashboard — UAT sign-off',desc:'Conduct user acceptance testing with warehouse team. Verify all KPIs match manual calculations. Document any discrepancies.',dept:'bu',ass:'SO',pri:'h',due:'Mar 25',status:'review',camp:'Power BI Inventory Dashboard',collabs:['TG']},
+  {id:11,title:'QA data migration — financial records batch',desc:'Validate migrated financial records. Cross-check GL balances, verify currency conversions, ensure audit trail integrity.',dept:'bu',ass:'SA',pri:'h',due:'Mar 26',status:'review',camp:'Data Migration',collabs:['SO','JA']},
+  {id:12,title:'Weekly Snapshot report template — final review',desc:'Review the automated report template layout, chart formatting, KPI card positioning. Ensure mobile-friendly PDF output.',dept:'bg',ass:'DO',pri:'m',due:'Mar 27',status:'review',camp:'Weekly Snapshot',collabs:[]},
+  {id:13,title:'Sales data source connection — test environment',desc:'Test the DirectQuery connection to the sales database in the staging environment. Verify row-level security policies.',dept:'bu',ass:'TG',pri:'m',due:'Mar 26',status:'review',camp:'Power BI Sales Dashboard',collabs:[]},
+  {id:14,title:'Publish Weekly Snapshot v2.0 to Power BI Service',desc:'Publish updated snapshot report to workspace. Configure scheduled refresh at 6AM daily. Set up email subscriptions for stakeholders.',dept:'bu',ass:'JA',pri:'m',due:'Mar 24',status:'approved',camp:'Weekly Snapshot',collabs:[]},
+  {id:15,title:'Data dictionary — inventory tables documentation',desc:'Complete data dictionary for all 12 inventory-related tables. Document column definitions, data types, business rules, and sample values.',dept:'bu',ass:'SA',pri:'l',due:'Mar 23',status:'approved',camp:'Data Migration',collabs:['DO']},
+  {id:16,title:'Data Migration Phase 1 — product catalog complete',desc:'All 24,000 product catalog records successfully migrated. Validation passed with 99.8% accuracy. 42 records flagged for manual review.',dept:'bu',ass:'JA',pri:'h',due:'Mar 20',status:'done',camp:'Data Migration',collabs:[]},
+  {id:17,title:'Weekly Snapshot v1.0 deployed',desc:'Initial version of the weekly snapshot report deployed to production. Covers revenue, orders, inventory turns, and top products.',dept:'bg',ass:'DO',pri:'l',due:'Mar 21',status:'done',camp:'Weekly Snapshot',collabs:[]},
+  {id:18,title:'Historical sales data backfill — 2023-2024',desc:'Backfilled 2 years of historical sales data (142K records) into the new data warehouse. Validated against monthly totals.',dept:'bu',ass:'SA',pri:'l',due:'Mar 15',status:'done',camp:'Power BI Sales Dashboard',collabs:[]},
+];
+let taskIdSeq=19;
+let activeTaskId=null;
+let editingCampId=null;
+let editingTaskId=null;
+let confirmCallback=null;
+let activeFilter='all';
+let dragTaskId=null;
+
+let members={
+  SO:{name:'Samuel Oluwadamilola Oyeniran',role:'Data Team Lead',status:'Online',active:7,tasks:['Data Migration Oversight','Customer Performance Dashboard','Process Automation Review']},
+  TG:{name:'Oloruntoba, Toluwalase Gabriel',role:'Data Analyst',status:'Online',active:8,tasks:['Power BI Inventory Dashboard','Power BI Sales Dashboard','DAX Measures Development']},
+  SA:{name:'Sharon Oluwapelumi Adedeji',role:'Data Analyst',status:'Online',active:6,tasks:['Data Migration Validation','Data Dictionary Documentation','Inventory Records QA']},
+  JA:{name:'Olusola John Abodunrin',role:'Data Engineer',status:'Focused',active:9,tasks:['ETL Pipeline Optimization','Weekly Snapshot Automation','Migration Scripts']},
+  DO:{name:'Deborah Ilashe Ogunmola',role:'Data Analyst',status:'Online',active:5,tasks:['Customer Data Cleanup','Weekly Snapshot Report','Sales Data Backfill']},
+};
+
+const VTITLES={dashboard:'Overview',projects:'Project Management',tasks:'Task Board',team:'Data Team',calendar:'Calendar',timeline:'Project Timeline',reports:'Reports & Analytics',notifs:'Notifications'};
+
+function goNav(id,el){
+  document.querySelectorAll('.view').forEach(v=>{v.style.display='none';v.classList.remove('on')});
+  const v=document.getElementById('v-'+id);
+  if(v){v.style.display=id==='tasks'?'flex':'block';v.classList.add('on')}
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('tb-title').textContent=VTITLES[id]||id;
+  closeDp();
+  if(id==='projects')renderCamps();
+  if(id==='tasks')renderAllTasks();
+  if(id==='reports')setTimeout(renderCharts,80);
+  if(id==='dashboard')renderDashCamps();
+  if(id==='team')renderTeam();
+}
+
+function renderCamps(){
+  const g=document.getElementById('camp-grid');
+  g.innerHTML=camps.map(c=>{
+    const avs=c.members.map(m=>{const col=MCOL[m]||'gray';return`<div class="av" style="background:var(--${col}-d,var(--bg4));color:var(--${col},var(--text2))">${m}</div>`;}).join('');
+    const tgs=c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+    const extras=[c.urgent?`<span class="xs" style="color:var(--red)">${c.urgent} urgent</span><span class="xs t3">·</span>`:'',c.open?`<span class="xs t3">${c.open} open tasks</span>`:'',c.note?`<span class="xs" style="color:var(--amber)">${c.note}</span>`:''].filter(Boolean).join('');
+    return`<div class="cc-card" style="border-left:3px solid var(${c.color})"><div class="cc-actions"><button class="btn btn-xs" onclick="openEditCampMo(${c.id})">✏️ Edit</button><button class="btn btn-xs btn-danger" onclick="confirmDeleteCamp(${c.id})">🗑</button></div><div class="f ic g8" style="margin-bottom:12px"><div><div style="font-size:14px;font-weight:600;color:var(--text)">${c.name}</div><div class="xs t3" style="margin-top:2px">${c.type} · Started ${c.start}</div></div><div class="mla" style="margin-right:52px"><span class="pill ${PILL[c.status]}">${PLBL[c.status]}</span></div></div><div class="bar-w" style="margin-bottom:8px"><div class="bar-f" style="width:${c.pct}%;background:var(${c.color})"></div></div><div class="xs t3" style="margin-bottom:12px">${c.pct}% complete · Due ${c.due}</div><div class="f g8" style="flex-wrap:wrap">${tgs}</div><div style="height:1px;background:var(--border);margin:14px 0"></div><div class="f ic g8"><div class="avs">${avs}</div><span class="xs t3">${c.members.length} member${c.members.length>1?'s':''}</span><div class="mla f g8">${extras}</div></div></div>`;
+  }).join('');
+  document.getElementById('nb-camp').textContent=camps.length;
+  document.getElementById('dash-cnt').textContent=camps.filter(c=>c.status==='active').length;
+}
+
+function renderDashCamps(){
+  const list=document.getElementById('dash-camp-list');
+  list.innerHTML=camps.slice(0,5).map(c=>`<div class="crow"><div class="cc" style="background:var(${c.color})"></div><div class="ci"><div class="cn">${c.name}</div><div class="cm">${c.tags.join(' • ')}</div></div><div><div class="pill ${PILL[c.status]}">${PLBL[c.status]}</div><div style="margin-top:5px"><div class="bar-w" style="width:80px"><div class="bar-f" style="width:${c.pct}%;background:var(${c.color})"></div></div></div></div></div>`).join('');
+}
+
+function openCampMo(ps){
+  editingCampId=null;
+  document.getElementById('camp-mo-title').textContent='Launch New Project';
+  document.getElementById('camp-mo-btn').textContent='Launch Project';
+  ['cname','cdesc','cstart','cend'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cstat').value=ps||'planning';
+  document.getElementById('cpct').value=0;document.getElementById('cpct-lbl').textContent='0%';
+  document.querySelectorAll('#depts input').forEach(cb=>cb.checked=cb.value==='BU');
+  document.getElementById('camp-mo').classList.add('open');
+}
+function closeCampMo(){document.getElementById('camp-mo').classList.remove('open')}
+
+function openEditCampMo(id){
+  const c=camps.find(x=>x.id===id);if(!c)return;
+  editingCampId=id;
+  document.getElementById('camp-mo-title').textContent='Edit Project';
+  document.getElementById('camp-mo-btn').textContent='Save Changes';
+  document.getElementById('cname').value=c.name;document.getElementById('cdesc').value=c.desc||'';
+  document.getElementById('ctype').value=c.type;document.getElementById('cstat').value=c.status;
+  document.getElementById('cstart').value=c.start;document.getElementById('cend').value=c.due;
+  document.getElementById('clead').value=c.members[0]||'SO';
+  document.getElementById('cpct').value=c.pct;document.getElementById('cpct-lbl').textContent=c.pct+'%';
+  document.querySelectorAll('#depts input').forEach(cb=>{cb.checked=c.tags.includes(cb.value)});
+  document.getElementById('camp-mo').classList.add('open');
+}
+
+function submitCampMo(){
+  const name=document.getElementById('cname').value.trim();
+  if(!name){document.getElementById('cname').style.borderColor='var(--red)';document.getElementById('cname').focus();return}
+  document.getElementById('cname').style.borderColor='';
+  const type=document.getElementById('ctype').value,status=document.getElementById('cstat').value;
+  const start=document.getElementById('cstart').value||'Now',due=document.getElementById('cend').value||'TBD';
+  const lead=document.getElementById('clead').value,pct=parseInt(document.getElementById('cpct').value);
+  const tags=Array.from(document.querySelectorAll('#depts input:checked')).map(i=>i.value);
+  if(editingCampId){const c=camps.find(x=>x.id===editingCampId);Object.assign(c,{name,type,status,start,due,pct,members:[lead,...c.members.filter(m=>m!==lead)],tags:tags.length?tags:[type]})}
+  else{const color=ACOLS[camps.length%ACOLS.length];camps.push({id:campIdSeq++,name,type,start,due,status,pct,color,members:[lead],tags:tags.length?tags:[type],open:0})}
+  closeCampMo();
+  const navEl=Array.from(document.querySelectorAll('.ni')).find(n=>n.textContent.includes('Project'));
+  goNav('projects',navEl);
+}
+
+function confirmDeleteCamp(id){
+  const c=camps.find(x=>x.id===id);
+  document.getElementById('confirm-title').textContent='Delete Project?';
+  document.getElementById('confirm-body').textContent=`"${c.name}" will be permanently removed.`;
+  confirmCallback=()=>{camps=camps.filter(x=>x.id!==id);renderCamps()};
+  document.getElementById('confirm-mo').classList.add('open');
+}
+
+function renderAllTasks(){COL_STAT.forEach(renderCol);updateTaskBadges();updateDashStats()}
+function renderCol(stat){
+  const col=document.getElementById('col-'+stat),cnt=document.getElementById('cnt-'+stat);if(!col)return;
+  const filtered=tasks.filter(t=>t.status===stat&&(activeFilter==='all'||t.dept===activeFilter));
+  col.innerHTML='';filtered.forEach(t=>col.appendChild(makeTaskCard(t)));cnt.textContent=filtered.length;
+}
+
+function makeTaskCard(t){
+  const mc=MCOL[t.ass]||'gray',isDone=t.status==='done',collabs=(t.collabs||[]).filter(c=>c!==t.ass);
+  const div=document.createElement('div');div.className='tc'+(isDone?' tc-done':'');div.dataset.id=t.id;div.draggable=true;
+  const collabHtml=collabs.length?`<div class="avs" style="margin-top:6px">${collabs.map(c=>{const cc=MCOL[c]||'gray';return`<div class="av" style="background:var(--${cc}-d,var(--bg4));color:var(--${cc},var(--text2));width:16px;height:16px;font-size:7px;border:1.5px solid var(--bg2)" title="${MNAME[c]||c}">${c}</div>`}).join('')}</div>`:'';
+  div.innerHTML=`<span class="ttag ${DCOL[t.dept]||'t-bu'}">${DLBL[t.dept]||t.dept}</span><div class="tt">${t.title}</div>${collabHtml}<div class="tf"><span class="td2" style="${t.due&&isDueSoon(t.due)?'color:var(--amber)':''}">${t.due||'No date'}</span><div class="av" style="background:var(--${mc}-d,var(--bg4));color:var(--${mc},var(--text2));width:18px;height:18px;font-size:8px" title="${MNAME[t.ass]||t.ass}">${t.ass}</div><div class="pd ${PCLASS[t.pri]||'pl'}"></div></div>`;
+  div.onclick=()=>openDp(t.id);
+  div.addEventListener('dragstart',e=>{dragTaskId=t.id;div.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.id)});
+  div.addEventListener('dragend',()=>{div.classList.remove('dragging');document.querySelectorAll('.kcol').forEach(c=>c.classList.remove('drag-over'))});
+  return div;
+}
+
+function isDueSoon(due){return due&&(due.includes('25')||due.includes('26')||due.includes('27')||due.includes('28'))}
+function updateTaskBadges(){document.getElementById('nb-task').textContent=tasks.filter(t=>t.status!=='done').length}
+function updateDashStats(){document.getElementById('dash-tasks').textContent=tasks.filter(t=>t.status!=='done').length;document.getElementById('dash-done').textContent=tasks.filter(t=>t.status==='done').length}
+
+function openDp(id){
+  activeTaskId=id;const t=tasks.find(x=>x.id===id);if(!t)return;
+  document.getElementById('dp-title').textContent=t.title;
+  document.getElementById('dp-desc').textContent=t.desc||'No description.';
+  document.getElementById('dp-priority').value=t.pri;
+  document.getElementById('dp-due').textContent=t.due||'No date set';
+  document.getElementById('dp-campaign').textContent=t.camp||'—';
+  const mc=MCOL[t.ass]||'gray';const avEl=document.getElementById('dp-av');
+  avEl.textContent=t.ass;avEl.style.background=`var(--${mc}-d,var(--bg4))`;avEl.style.color=`var(--${mc},var(--text2))`;
+  document.getElementById('dp-assignee-name').textContent=MNAME[t.ass]||t.ass;
+  document.getElementById('dp-assignee-role').textContent=MROLE[t.ass]||'';
+  const COL_LABELS={backlog:'Backlog',progress:'In Progress',review:'In Review',approved:'Approved',done:'Done'};
+  const moveBtns=document.getElementById('dp-move-btns');moveBtns.innerHTML='';
+  COL_STAT.forEach(s=>{const btn=document.createElement('button');btn.className='move-btn'+(t.status===s?' current-col':'');btn.textContent=COL_LABELS[s];btn.onclick=()=>moveTaskTo(s);moveBtns.appendChild(btn)});
+  renderDpCollabs(t.collabs||[],t.ass);
+  document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));
+  const card=document.querySelector(`.tc[data-id="${id}"]`);if(card)card.classList.add('sel');
+  document.getElementById('dp').classList.add('on');
+}
+
+function renderDpCollabs(collabs,ass){
+  const tagged=document.getElementById('dp-collabs');
+  if(collabs.length){tagged.innerHTML='';collabs.forEach(k=>{const cc=MCOL[k]||'gray';const el=document.createElement('div');el.className='collab-tag';el.title='Click to remove';el.dataset.key=k;el.innerHTML=`<div class="av" style="background:var(--${cc}-d,var(--bg4));color:var(--${cc},var(--text2))">${k}</div>${MNAME[k]||k} ✕`;el.onclick=()=>toggleCollab(k);tagged.appendChild(el)})}
+  else{tagged.innerHTML='<span style="font-size:11px;color:var(--text3)">No collaborators tagged yet</span>'}
+  const picker=document.getElementById('dp-collab-picker');picker.innerHTML='';
+  Object.keys(MNAME).filter(k=>k!==ass).forEach(k=>{const cc=MCOL[k]||'gray';const isT=collabs.includes(k);const el=document.createElement('div');el.className='collab-chip'+(isT?' tagged':'');el.dataset.key=k;el.innerHTML=`<div class="av" style="background:var(--${cc}-d,var(--bg4));color:var(--${cc},var(--text2))">${k}</div>${MNAME[k]||k}`;el.onclick=()=>toggleCollab(k);picker.appendChild(el)});
+}
+
+function toggleCollab(key){
+  if(!activeTaskId)return;const t=tasks.find(x=>x.id===activeTaskId);if(!t)return;
+  if(!t.collabs)t.collabs=[];const idx=t.collabs.indexOf(key);
+  if(idx>=0)t.collabs.splice(idx,1);else t.collabs.push(key);
+  renderDpCollabs(t.collabs,t.ass);renderAllTasks();
+  setTimeout(()=>{const card=document.querySelector(`.tc[data-id="${activeTaskId}"]`);if(card)card.classList.add('sel')},10);
+}
+
+function moveTaskTo(ns){
+  if(!activeTaskId)return;const t=tasks.find(x=>x.id===activeTaskId);if(!t||t.status===ns)return;
+  t.status=ns;renderAllTasks();openDp(activeTaskId);
+  setTimeout(()=>{const card=document.querySelector(`.tc[data-id="${activeTaskId}"]`);if(card){card.classList.add('sel');card.scrollIntoView({behavior:'smooth',block:'nearest'})}},20);
+}
+
+function closeDp(){document.getElementById('dp').classList.remove('on');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));activeTaskId=null}
+function changeTaskPriority(){if(!activeTaskId)return;const t=tasks.find(x=>x.id===activeTaskId);if(!t)return;t.pri=document.getElementById('dp-priority').value;renderAllTasks();setTimeout(()=>{const card=document.querySelector(`.tc[data-id="${activeTaskId}"]`);if(card)card.classList.add('sel')},10)}
+
+function onDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';const col=e.currentTarget.closest('.kcol');if(col)col.classList.add('drag-over')}
+function onDragLeave(e){const col=e.currentTarget.closest('.kcol');if(col&&!col.contains(e.relatedTarget))col.classList.remove('drag-over')}
+function onDrop(e,ns){e.preventDefault();const col=e.currentTarget.closest('.kcol');if(col)col.classList.remove('drag-over');if(dragTaskId===null)return;const t=tasks.find(x=>x.id===dragTaskId);if(!t||t.status===ns)return;t.status=ns;renderAllTasks();if(activeTaskId===dragTaskId)openDp(dragTaskId);dragTaskId=null}
+
+function buildModalCollabPicker(sel,excl){
+  const picker=document.getElementById('modal-collab-picker');picker.innerHTML='';
+  Object.keys(MNAME).filter(k=>k!==excl).forEach(k=>{const cc=MCOL[k]||'gray';const s=sel.includes(k);const el=document.createElement('div');el.className='collab-chip'+(s?' tagged':'');el.dataset.key=k;el.innerHTML=`<div class="av" style="background:var(--${cc}-d,var(--bg4));color:var(--${cc},var(--text2))">${k}</div>${MNAME[k]||k}`;el.onclick=()=>el.classList.toggle('tagged');picker.appendChild(el)});
+}
+
+function openTaskMo(ps){
+  editingTaskId=null;document.getElementById('task-mo-title').textContent='Create New Task';
+  document.getElementById('task-mo-btn').textContent='Create Task';
+  ['ti','tdesc','tdue'].forEach(id=>document.getElementById(id).value='');
+  if(ps)document.getElementById('tstat').value=ps;
+  buildModalCollabPicker([],document.getElementById('tass').value);
+  document.getElementById('task-mo').classList.add('open');
+}
+function closeTaskMo(){document.getElementById('task-mo').classList.remove('open')}
+
+function openEditTaskMo(){
+  if(!activeTaskId)return;const t=tasks.find(x=>x.id===activeTaskId);if(!t)return;
+  editingTaskId=t.id;document.getElementById('task-mo-title').textContent='Edit Task';
+  document.getElementById('task-mo-btn').textContent='Save Changes';
+  document.getElementById('ti').value=t.title;document.getElementById('tdesc').value=t.desc||'';
+  document.getElementById('tdept').value=t.dept;document.getElementById('tass').value=t.ass;
+  document.getElementById('tpri').value=t.pri;document.getElementById('tdue').value=t.due||'';
+  document.getElementById('tstat').value=t.status;document.getElementById('tc').value=t.camp||'—';
+  buildModalCollabPicker(t.collabs||[],t.ass);document.getElementById('task-mo').classList.add('open');
+}
+
+function submitTaskMo(){
+  const title=document.getElementById('ti').value.trim();
+  if(!title){document.getElementById('ti').style.borderColor='var(--red)';document.getElementById('ti').focus();return}
+  document.getElementById('ti').style.borderColor='';
+  const collabs=Array.from(document.querySelectorAll('#modal-collab-picker .collab-chip.tagged')).map(el=>el.dataset.key);
+  const td={title,desc:document.getElementById('tdesc').value.trim()||'No description.',dept:document.getElementById('tdept').value,ass:document.getElementById('tass').value,pri:document.getElementById('tpri').value,due:document.getElementById('tdue').value||'',status:document.getElementById('tstat').value,camp:document.getElementById('tc').value,collabs};
+  if(editingTaskId){const t=tasks.find(x=>x.id===editingTaskId);Object.assign(t,td);openDp(editingTaskId)}
+  else{td.id=taskIdSeq++;tasks.unshift(td)}
+  closeTaskMo();renderAllTasks();
+  if(!document.getElementById('v-tasks').classList.contains('on')){const el=Array.from(document.querySelectorAll('.ni')).find(n=>n.textContent.includes('Task'));goNav('tasks',el)}
+}
+
+function confirmDeleteTask(){
+  if(!activeTaskId)return;const t=tasks.find(x=>x.id===activeTaskId);
+  document.getElementById('confirm-title').textContent='Delete this task?';
+  document.getElementById('confirm-body').textContent=`"${t.title}" will be permanently removed.`;
+  confirmCallback=()=>{tasks=tasks.filter(x=>x.id!==activeTaskId);closeDp();renderAllTasks()};
+  document.getElementById('confirm-mo').classList.add('open');
+}
+
+function closeConfirm(){document.getElementById('confirm-mo').classList.remove('open');confirmCallback=null}
+function executeConfirm(){if(confirmCallback)confirmCallback();closeConfirm()}
+
+document.getElementById('ftabs').addEventListener('click',function(e){
+  const tab=e.target.closest('.ftab');if(!tab)return;
+  document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('on'));tab.classList.add('on');
+  activeFilter=tab.dataset.filter||'all';renderAllTasks();closeDp();
+});
+
+const CJ=Chart;const chartInsts={};
+const GRID={color:'rgba(0,0,0,0.06)',drawBorder:false};
+const TICK={color:'#848688',font:{size:11,family:"'DM Sans'"}};
+const LEGEND_DEF={labels:{color:'#5A5860',font:{size:11,family:"'DM Sans'"},boxWidth:10,padding:14}};
+function mkChart(id,cfg){if(chartInsts[id])chartInsts[id].destroy();const ctx=document.getElementById(id);if(!ctx)return;chartInsts[id]=new CJ(ctx,cfg)}
+
+function renderCharts(){
+  document.getElementById('tasks-total-lbl').textContent=tasks.length+' total tasks';
+  mkChart('chartTraffic',{type:'line',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],datasets:[{label:'Dashboards',data:[6,8,7,9,10,12],borderColor:'#8F3030',backgroundColor:'rgba(143,48,48,0.08)',fill:true,tension:0.4,pointBackgroundColor:'#8F3030',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:GRID,ticks:TICK},y:{grid:GRID,ticks:TICK}}}});
+  const sc=COL_STAT.map(s=>tasks.filter(t=>t.status===s).length);
+  mkChart('chartTasks',{type:'doughnut',data:{labels:['Backlog','In Progress','In Review','Approved','Done'],datasets:[{data:sc,backgroundColor:['#848688','#3A6FD8','#C88A18','#7A50D0','#22A55A'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:LEGEND_DEF}}});
+  mkChart('chartSocial',{type:'bar',data:{labels:['ETL','Data Cleanup','Report Build','Migration','Automation'],datasets:[{label:'Runs',data:[124,45,38,28,18],backgroundColor:['#3A6FD8','#0E8C88','#8F3030','#7A50D0','#22A55A'],borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:TICK},y:{grid:GRID,ticks:TICK}}}});
+  mkChart('chartLeads',{type:'line',data:{labels:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6','Wk 7','Wk 8','Wk 9','Wk 10','Wk 11','Wk 12'],datasets:[{label:'Quality %',data:[91,92,90,93,92,94,93,95,94,96,95,96.4],borderColor:'#22A55A',backgroundColor:'rgba(34,165,90,0.08)',fill:true,tension:0.4,pointBackgroundColor:'#22A55A',pointRadius:3,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:GRID,ticks:{...TICK,maxTicksLimit:6}},y:{grid:GRID,ticks:TICK,min:88,max:100}}}});
+  mkChart('chartCamps',{type:'bar',data:{labels:camps.map(c=>c.name.length>28?c.name.slice(0,28)+'…':c.name),datasets:[{label:'% Complete',data:camps.map(c=>c.pct),backgroundColor:camps.map(c=>{const m={'--teal':'#0E8C88','--amber':'#C88A18','--blue':'#3A6FD8','--coral':'#D05A2A','--purple':'#7A50D0','--green':'#22A55A'};return m[c.color]||'#8F3030'}),borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:GRID,ticks:{...TICK,callback:v=>v+'%'},max:100},y:{grid:{display:false},ticks:TICK}}}});
+  mkChart('chartSeo',{type:'radar',data:{labels:['Inventory','Sales','Finance','Customer','Logistics','HR'],datasets:[{label:'Coverage',data:[92,78,65,45,58,30],borderColor:'#3A6FD8',backgroundColor:'rgba(58,111,216,0.1)',pointBackgroundColor:'#3A6FD8',pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{grid:{color:'rgba(0,0,0,0.06)'},pointLabels:{color:'#5A5860',font:{size:10}},ticks:{display:false},min:0,max:100,angleLines:{color:'rgba(0,0,0,0.06)'}}}}});
+  mkChart('chartContent',{type:'polarArea',data:{labels:['Dashboards','ETL Pipelines','SQL Scripts','Automations','Documentation'],datasets:[{data:[12,8,22,5,6],backgroundColor:['rgba(143,48,48,0.6)','rgba(58,111,216,0.6)','rgba(14,140,136,0.6)','rgba(34,165,90,0.6)','rgba(200,138,24,0.6)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:LEGEND_DEF},scales:{r:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{display:false},angleLines:{display:false}}}}});
+}
+
+function renderTeam(){
+  const grid=document.getElementById('team-grid');if(!grid)return;
+  const colMap={burg:'burg-dim',teal:'teal-d',blue:'blue-d',purple:'purple-d',amber:'amber-d',green:'green-d',coral:'coral-d',pink:'pink-d'};
+  const PILL_MAP={'Online':'p-act','Away':'p-rev','In Meeting':'p-pln','Focused':'p-drf','Out of Office':'p-paused'};
+  grid.innerHTML=Object.entries(members).map(([key,m])=>{
+    const col=MCOL[key]||'gray';const bg=colMap[col]||'bg4';const pillCls=PILL_MAP[m.status]||'p-pln';
+    const dotColors=['var(--amber)','var(--red)','var(--blue)','var(--teal)'];
+    const taskDots=(m.tasks||[]).slice(0,3).map((tname,i)=>`<div class="tmi"><div class="tmd" style="background:${dotColors[i]||'var(--text3)'}"></div>${tname}</div>`).join('');
+    const reviewCnt=tasks.filter(tk=>tk.ass===key&&tk.status==='review').length;
+    const doneCnt=tasks.filter(tk=>tk.ass===key&&tk.status==='done').length;
+    return`<div class="mc" id="mc-${key}"><button class="btn btn-xs mc-edit-btn" onclick="openMemberMo('${key}')">✏️ Edit</button><div class="mt2"><div class="mav" style="background:var(--${bg},var(--bg4));color:var(--${col},var(--text2))">${key}</div><div><div class="mn">${m.name}</div><div class="mr">${m.role}</div><div style="margin-top:5px"><span class="pill ${pillCls}" style="font-size:9px">${m.status}</span></div></div></div><div class="mst"><div class="msb"><div class="msv">${m.active}</div><div class="msl">Active</div></div><div class="msb"><div class="msv">${reviewCnt}</div><div class="msl">Review</div></div><div class="msb"><div class="msv">${doneCnt}</div><div class="msl">Done</div></div></div><div class="tml">${taskDots}</div></div>`;
+  }).join('');
+}
+
+function openMemberMo(key){
+  const m=members[key];if(!m)return;
+  document.getElementById('m-key').value=key;document.getElementById('m-name').value=m.name;
+  document.getElementById('m-role').value=m.role;document.getElementById('m-status').value=m.status;
+  document.getElementById('m-active').value=m.active;
+  document.getElementById('m-task1').value=(m.tasks||[])[0]||'';
+  document.getElementById('m-task2').value=(m.tasks||[])[1]||'';
+  document.getElementById('m-task3').value=(m.tasks||[])[2]||'';
+  document.getElementById('member-mo').classList.add('open');
+}
+function closeMemberMo(){document.getElementById('member-mo').classList.remove('open')}
+function saveMember(){
+  const key=document.getElementById('m-key').value;const name=document.getElementById('m-name').value.trim();
+  const role=document.getElementById('m-role').value.trim();if(!name||!role)return;
+  const t1=[document.getElementById('m-task1').value.trim(),document.getElementById('m-task2').value.trim(),document.getElementById('m-task3').value.trim()].filter(Boolean);
+  members[key]={...members[key],name,role,status:document.getElementById('m-status').value,active:parseInt(document.getElementById('m-active').value)||0,tasks:t1};
+  MNAME[key]=name;MROLE[key]=role;closeMemberMo();renderTeam();
+}
+
+['task-mo','camp-mo','confirm-mo','member-mo'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this){this.classList.remove('open');if(id==='confirm-mo')confirmCallback=null}});
+});
+document.getElementById('tass').addEventListener('change',function(){
+  const ct=Array.from(document.querySelectorAll('#modal-collab-picker .collab-chip.tagged')).map(e=>e.dataset.key);
+  buildModalCollabPicker(ct.filter(k=>k!==this.value),this.value);
+});
+
+renderDashCamps();updateDashStats();renderAllTasks();renderTeam();
+</script>
+</body>
+</html>
