@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { useAuth } from './src/AuthContext';
 import { useSocket, showDesktopNotification } from './src/SocketContext';
 import * as API from './src/api';
@@ -106,6 +106,19 @@ const COL_STAT = ['backlog', 'progress', 'review', 'approved', 'done'];
 const COL_LABELS = { backlog: 'Backlog', progress: 'In Progress', review: 'In Review', approved: 'Approved', done: 'Done' };
 const COL_DOT = { backlog: COLORS.gray, progress: COLORS.blue, review: COLORS.amber, approved: COLORS.purple, done: COLORS.green };
 
+// ── Department categories — edit this list to match your team ──
+const DEPT_OPTIONS = ['SEO', 'Social', 'Video', 'Content', 'Digital', 'OEM', 'Analytics', 'General'];
+const DEPT_COLORS = {
+  SEO:       { bg: COLORS.blueD,   fg: COLORS.blue   },
+  Social:    { bg: COLORS.tealD,   fg: COLORS.teal   },
+  Video:     { bg: COLORS.purpleD, fg: COLORS.purple },
+  Content:   { bg: COLORS.amberD,  fg: COLORS.amber  },
+  Digital:   { bg: COLORS.coralD,  fg: COLORS.coral  },
+  OEM:       { bg: COLORS.greenD,  fg: COLORS.green  },
+  Analytics: { bg: COLORS.blueD,   fg: COLORS.blue   },
+  General:   { bg: '#EBEAED',      fg: '#848688'     },
+};
+
 const NAV_ITEMS = [
   { section: 'Workspace' },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -160,7 +173,11 @@ const Pill = ({ status }) => {
   return <span style={{ fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: s.bg, color: s.fg, whiteSpace: 'nowrap' }}>{s.label}</span>;
 };
 
-const DeptTag = () => null;
+const DeptTag = ({ dept }) => {
+  if (!dept) return null;
+  const d = DEPT_COLORS[dept] || { bg: '#EBEAED', fg: '#848688' };
+  return <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, fontWeight: 600, background: d.bg, color: d.fg, display: 'inline-block', marginBottom: 5 }}>{dept}</span>;
+};
 
 const Tag = ({ children }) => <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: '#EBEAED', color: '#918E98' }}>{children}</span>;
 
@@ -273,10 +290,40 @@ export default function App() {
   const [confirmModal, setConfirmModal]   = useState(null);
   const [addMemberModal, setAddMemberModal] = useState(false);
   const [resetPassModal, setResetPassModal] = useState(null); // { userId, userName, initials }
-  const [unreadChat, setUnreadChat]        = useState(0);    // badge on Team Chat nav item
-  const [onlineUserIds, setOnlineUserIds]  = useState(new Set()); // real-time presence
+  const [unreadChat, setUnreadChat]        = useState(0);
+  const [onlineUserIds, setOnlineUserIds]  = useState(new Set());
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth]     = useState(window.innerWidth);
+  const [darkMode, setDarkMode]           = useState(() => localStorage.getItem('tdDark') === '1');
+
+  // Persist dark mode preference
+  useEffect(() => { localStorage.setItem('tdDark', darkMode ? '1' : '0'); }, [darkMode]);
+
+  // ── Theme object — all colour decisions in one place ──────────
+  const T = {
+    bg:           darkMode ? '#111111' : '#F4F3F5',
+    surface:      darkMode ? '#1c1c1c' : '#ffffff',
+    surface2:     darkMode ? '#252525' : '#FBF3F4',
+    border:       darkMode ? '#2e2e2e' : '#E2E0E5',
+    text:         darkMode ? '#e8e8e8' : '#3D0A14',
+    textSub:      darkMode ? '#888888' : '#918E98',
+    navBg:        darkMode ? '#161616' : '#ffffff',
+    navBorder:    darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    navText:      darkMode ? '#d0d0d0' : '#000000',
+    navTextSub:   darkMode ? 'rgba(255,255,255,0.4)'  : 'rgba(0,0,0,0.45)',
+    navSection:   darkMode ? 'rgba(255,255,255,0.3)'  : 'rgba(0,0,0,0.4)',
+    navActive:    darkMode ? 'rgba(139,26,43,0.28)'   : COLORS.burgDim,
+    searchBg:     darkMode ? '#222222' : '#FBF3F4',
+    filterIn:     darkMode ? '#252525' : 'transparent',
+    filterBorder: darkMode ? '#3a3a3a' : '#E2E0E5',
+    filterText:   darkMode ? '#999999' : '#5A5860',
+    colBg:        darkMode ? '#1c1c1c' : '#ffffff',
+    colHover:     darkMode ? 'rgba(139,26,43,0.15)' : COLORS.burgDim,
+    colHoverBorder: darkMode ? COLORS.burg : COLORS.burg,
+    cardBg:       darkMode ? '#252525' : '#FBF3F4',
+    cardBorder:   darkMode ? '#363636' : '#E2E0E5',
+    cardText:     darkMode ? '#e0e0e0' : '#3D0A14',
+  };
 
   // ── Load all data from the API on mount ────────────────────
   const loadData = useCallback(async () => {
@@ -582,96 +629,75 @@ export default function App() {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 199 }} />
       )}
       <nav style={{
-        width: 222, minWidth: 222, background: '#fff',
+        width: 222, minWidth: 222, background: T.navBg,
         display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden',
-        zIndex: 200, borderRight: '1px solid rgba(0,0,0,0.08)',
+        zIndex: 200, borderRight: `1px solid ${T.navBorder}`, transition: 'background 0.2s',
         ...(isMobile ? {
           position: 'fixed', top: 0, left: 0,
           transform: mobileSidebarOpen ? 'translateX(0)' : 'translateX(-222px)',
           transition: 'transform 0.25s ease',
-          boxShadow: mobileSidebarOpen ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
+          boxShadow: mobileSidebarOpen ? '4px 0 24px rgba(0,0,0,0.2)' : 'none',
         } : {}),
       }}>
         {/* ── Sidebar header — logo + company name ── */}
-        <div style={{ padding: '16px 16px 14px', borderBottom: '1px solid rgba(0,0,0,0.08)', background: 'transparent', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${T.navBorder}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <img
-              src={BRAND.logo}
-              alt={BRAND.company}
+            <img src={BRAND.logo} alt={BRAND.company}
               style={{ height: 52, maxWidth: '100%', objectFit: 'contain', objectPosition: 'left' }}
-              onError={e => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
+              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
             />
-            {/* Text fallback (hidden unless logo fails to load) */}
             <div style={{ display: 'none', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 12, color: '#000' }}>TD</div>
-              <div>
-                <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 15, color: '#000' }}>{BRAND.company}</div>
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 1 }}>{BRAND.subtitle}</div>
-              </div>
+              <div style={{ width: 34, height: 34, borderRadius: 8, background: COLORS.burg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 12, color: '#fff' }}>TD</div>
+              <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 15, color: T.navText }}>{BRAND.company}</div>
             </div>
-            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 6 }}>{BRAND.subtitle}</div>
+            {/* Show user's job title as personalised subtitle */}
+            <div style={{ fontSize: 10, color: T.navTextSub, textTransform: 'uppercase', letterSpacing: 1, marginTop: 6 }}>
+              {authUser?.job_title || BRAND.subtitle}
+            </div>
           </div>
-          {/* Close button — mobile only */}
           {isMobile && (
             <button onClick={() => setMobileSidebarOpen(false)}
-              style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 6, color: '#000', cursor: 'pointer', padding: '5px 9px', fontSize: 15, lineHeight: 1, flexShrink: 0, marginLeft: 8, marginTop: 2 }}>
-              ✕
-            </button>
+              style={{ background: T.navBorder, border: 'none', borderRadius: 6, color: T.navText, cursor: 'pointer', padding: '5px 9px', fontSize: 15, lineHeight: 1, flexShrink: 0, marginLeft: 8, marginTop: 2 }}>✕</button>
           )}
         </div>
         <div style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
           {NAV_ITEMS.filter(item => !item.adminOnly || authUser?.role === 'admin').map((item, i) => {
-            if (item.section) return <div key={i} style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(0,0,0,0.4)', padding: '10px 8px 6px', fontWeight: 500 }}>{item.section}</div>;
+            if (item.section) return <div key={i} style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: T.navSection, padding: '10px 8px 6px', fontWeight: 500 }}>{item.section}</div>;
             const active = view === item.id;
             const Icon = item.icon;
             const badgeVal = item.badge === 'camps' ? projects.length : item.badge === 'tasks' ? openTasks : item.badge === 'notifs' ? null : item.badge === 'chat' && unreadChat > 0 ? unreadChat : null;
             return (
-              <div key={item.id} onClick={() => goNav(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, cursor: 'pointer', color: active ? COLORS.burg : 'rgba(0,0,0,0.65)', fontSize: 13, marginBottom: 1, background: active ? COLORS.burgDim : 'transparent', fontWeight: active ? 600 : 400 }}>
-                <Icon size={16} style={{ opacity: active ? 1 : 0.6 }} />
+              <div key={item.id} onClick={() => goNav(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, cursor: 'pointer', color: active ? COLORS.burg : T.navText, fontSize: 13, marginBottom: 1, background: active ? T.navActive : 'transparent', fontWeight: active ? 600 : 400, opacity: active ? 1 : 0.85 }}>
+                <Icon size={16} />
                 {item.label}
                 {badgeVal !== null && <span style={{ marginLeft: 'auto', background: COLORS.burg, color: '#fff', fontSize: 10, fontWeight: 700, borderRadius: 20, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{badgeVal}</span>}
               </div>
             );
           })}
         </div>
-        <div style={{ padding: 12, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ padding: 12, borderTop: `1px solid ${T.navBorder}` }}>
           {authUser?.initials === 'MT' ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 8px', borderRadius: 6 }}>
-              <Avatar k="MT" size={28} style={{ background: 'rgba(0,0,0,0.08)', color: '#000' }} />
+              <Avatar k="MT" size={28} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#000' }}>Team View</div>
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.5)' }}>Shared session</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: T.navText }}>Team View</div>
+                <div style={{ fontSize: 10, color: T.navTextSub }}>Shared session</div>
               </div>
             </div>
           ) : (
-            <div
-              onClick={() => setMemberModal({ key: authUser?.initials, name: authUser?.name || '', email: authUser?.email || '', role: authUser?.job_title || '', status: authUser?.status || 'Online' })}
-              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 8px', borderRadius: 6, cursor: 'pointer' }}
-              title="View profile"
-            >
-              <Avatar k={authUser?.initials || 'MT'} size={28} style={{ background: 'rgba(0,0,0,0.08)', color: '#000' }} />
+            <div onClick={() => setMemberModal({ key: authUser?.initials, name: authUser?.name || '', email: authUser?.email || '', role: authUser?.job_title || '', status: authUser?.status || 'Online' })}
+              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 8px', borderRadius: 6, cursor: 'pointer' }} title="View profile">
+              <Avatar k={authUser?.initials || 'MT'} size={28} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.name?.split(' ')[0] || 'User'}</div>
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.5)' }}>{authUser?.job_title || 'Profile'}</div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: T.navText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.name?.split(' ')[0] || 'User'}</div>
+                <div style={{ fontSize: 10, color: T.navTextSub }}>{authUser?.job_title || 'Profile'}</div>
               </div>
             </div>
           )}
-          {/* Sign Out button — always visible at the bottom */}
-          <button
-            onClick={logout}
-            style={{
-              width: '100%', marginTop: 8, padding: '9px 12px', borderRadius: 7,
-              background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)',
-              color: '#000', cursor: 'pointer', fontSize: 12, fontWeight: 500,
-              display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center',
-              fontFamily: "'DM Sans',sans-serif", transition: 'background 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.08)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
-          >
+          <button onClick={logout}
+            style={{ width: '100%', marginTop: 8, padding: '9px 12px', borderRadius: 7, background: T.filterIn, border: `1px solid ${T.navBorder}`, color: T.navText, cursor: 'pointer', fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', fontFamily: "'DM Sans',sans-serif", transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)'}
+            onMouseLeave={e => e.currentTarget.style.background = T.filterIn}>
             <LogOut size={13} /> Sign Out
           </button>
         </div>
@@ -685,19 +711,19 @@ export default function App() {
     const collabs = (task.collabs || []).filter(c => c !== task.ass);
     return (
       <div draggable
-        onDragStart={e => { e.currentTarget.style.opacity = '0.4'; onDragStart(e, task.id); }}
+        onDragStart={e => { e.currentTarget.style.opacity = '0.35'; onDragStart(e, task.id); }}
         onDragEnd={e => { e.currentTarget.style.opacity = isDone ? '0.6' : '1'; }}
         onClick={() => setActiveTaskId(task.id)}
-        style={{ background: '#FBF3F4', border: `1px solid ${activeTaskId === task.id ? COLORS.burg : '#E2E0E5'}`, borderRadius: 6, padding: '11px 12px', cursor: 'grab', opacity: isDone ? 0.6 : 1, boxShadow: activeTaskId === task.id ? `0 0 0 1px ${COLORS.burg}` : 'none', transition: 'all .15s' }}>
+        style={{ background: T.cardBg, border: `1px solid ${activeTaskId === task.id ? COLORS.burg : T.cardBorder}`, borderRadius: 6, padding: '11px 12px', cursor: 'grab', opacity: isDone ? 0.6 : 1, boxShadow: activeTaskId === task.id ? `0 0 0 1px ${COLORS.burg}` : 'none', transition: 'all .15s' }}>
         <DeptTag dept={task.dept} />
-        <div style={{ fontSize: 13, fontWeight: 500, color: '#3D0A14', marginBottom: 7, lineHeight: 1.4 }}>{task.title}</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: T.cardText, marginBottom: 7, lineHeight: 1.4 }}>{task.title}</div>
         {collabs.length > 0 && (
           <div style={{ display: 'flex', marginTop: 6 }}>
-            {collabs.map(c => <Avatar key={c} k={c} size={16} style={{ marginLeft: -4, border: '1.5px solid #fff', fontSize: 7 }} />)}
+            {collabs.map(c => <Avatar key={c} k={c} size={16} style={{ marginLeft: -4, border: `1.5px solid ${T.cardBg}`, fontSize: 7 }} />)}
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-          <span style={{ fontSize: 10, color: '#918E98', flex: 1 }}>{task.due || 'No date'}</span>
+          <span style={{ fontSize: 10, color: T.textSub, flex: 1 }}>{task.due || 'No date'}</span>
           <Avatar k={task.ass} size={18} />
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: PRIORITY_DOT[task.pri] || COLORS.green }} />
         </div>
@@ -1063,33 +1089,65 @@ export default function App() {
   };
 
   /* ── TASK BOARD ── */
-  const TaskBoardView = () => (
+  const TaskBoardView = () => {
+    const myInitials  = authUser?.initials;
+    const myTasks     = tasks.filter(t => (t.ass || t.assignee_initials) === myInitials);
+    const collabTasks = tasks.filter(t => {
+      const c = (t.collabs || []).concat((t.collaborators || []).map(x => x.initials ?? x));
+      return c.includes(myInitials) && (t.ass || t.assignee_initials) !== myInitials;
+    });
+    const activeDepts = [...new Set(tasks.map(t => t.dept).filter(Boolean))];
+    const TABS = [
+      { f: 'all',    l: 'All Tasks' },
+      { f: 'mine',   l: `My Tasks (${myTasks.length})` },
+      { f: 'collab', l: `Collaborating (${collabTasks.length})` },
+      ...activeDepts.map(d => ({ f: `dept:${d}`, l: d })),
+    ];
+    const getFiltered = stat => tasks.filter(t => {
+      if (t.status !== stat) return false;
+      if (activeFilter === 'all')    return true;
+      if (activeFilter === 'mine')   return (t.ass || t.assignee_initials) === myInitials;
+      if (activeFilter === 'collab') {
+        const c = (t.collabs || []).concat((t.collaborators || []).map(x => x.initials ?? x));
+        return c.includes(myInitials);
+      }
+      if (activeFilter.startsWith('dept:')) return t.dept === activeFilter.slice(5);
+      return true;
+    });
+    return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: 'calc(100vh - 54px)' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[{ f: 'all', l: 'All Tasks' }].map(t => (
-              <div key={t.f} onClick={() => { setActiveFilter(t.f); setActiveTaskId(null); }} style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer', border: `1px solid ${activeFilter === t.f ? COLORS.burg : '#E2E0E5'}`, color: activeFilter === t.f ? COLORS.burg : '#5A5860', background: activeFilter === t.f ? COLORS.burgDim : 'transparent' }}>{t.l}</div>
-            ))}
+        {/* ── Filter tabs ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', flex: 1 }}>
+            {TABS.map(t => {
+              const on = activeFilter === t.f;
+              return (
+                <div key={t.f} onClick={() => { setActiveFilter(t.f); setActiveTaskId(null); }}
+                  style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: on ? 600 : 400, border: `1px solid ${on ? COLORS.burg : T.filterBorder}`, color: on ? COLORS.burg : T.filterText, background: on ? COLORS.burgDim : T.filterIn, transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                  {t.l}
+                </div>
+              );
+            })}
           </div>
-          <div style={{ marginLeft: 'auto' }}><Btn primary sm onClick={() => setTaskModal({})}><Plus size={12} /> Add Task</Btn></div>
+          <Btn primary sm onClick={() => setTaskModal({})}><Plus size={12} /> Add Task</Btn>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(220px,1fr))', gap: 12, overflowX: 'auto', paddingBottom: 10 }}>
           {COL_STAT.map(stat => {
-            const filtered = tasks.filter(t => t.status === stat);
+            const filtered = getFiltered(stat);
             return (
               <div key={stat}
-                onDragOver={e => { e.preventDefault(); e.currentTarget.style.background = COLORS.burgDim; e.currentTarget.style.border = `1px solid ${COLORS.burg}`; }}
-                onDragLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.border = '1px solid #E2E0E5'; }}
-                onDrop={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.border = '1px solid #E2E0E5'; onDrop(e, stat); }}
-                style={{ background: '#fff', border: '1px solid #E2E0E5', borderRadius: 10, minHeight: 400, display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transition: 'background 0.15s, border 0.15s' }}>
-                <div style={{ padding: '12px 14px', borderBottom: '1px solid #E2E0E5', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7, color: COLORS.charcoal }}>
+                onDragOver={e => { e.preventDefault(); e.currentTarget.style.background = T.colHover; e.currentTarget.style.border = `1px solid ${COLORS.burg}`; }}
+                onDragLeave={e => { e.currentTarget.style.background = T.colBg; e.currentTarget.style.border = `1px solid ${T.border}`; }}
+                onDrop={e => { e.currentTarget.style.background = T.colBg; e.currentTarget.style.border = `1px solid ${T.border}`; onDrop(e, stat); }}
+                style={{ background: T.colBg, border: `1px solid ${T.border}`, borderRadius: 10, minHeight: 400, display: 'flex', flexDirection: 'column', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'background 0.15s, border 0.15s' }}>
+                <div style={{ padding: '12px 14px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7, color: T.text }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: COL_DOT[stat] }} />
                     {COL_LABELS[stat]}
-                    <span style={{ fontSize: 10, background: '#EBEAED', color: '#918E98', borderRadius: 20, padding: '1px 7px' }}>{filtered.length}</span>
+                    <span style={{ fontSize: 10, background: T.filterIn, color: T.textSub, borderRadius: 20, padding: '1px 7px', border: `1px solid ${T.border}` }}>{filtered.length}</span>
                   </div>
-                  {stat !== 'done' && <div onClick={() => setTaskModal({ status: stat })} style={{ cursor: 'pointer', color: '#918E98', fontSize: 18 }}>+</div>}
+                  {stat !== 'done' && <div onClick={() => setTaskModal({ status: stat })} style={{ cursor: 'pointer', color: T.textSub, fontSize: 18 }}>+</div>}
                 </div>
                 <div style={{ padding: 10, flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {filtered.map(t => <TaskCard key={t.id} task={t} />)}
@@ -1099,10 +1157,10 @@ export default function App() {
           })}
         </div>
       </div>
-      {/* Detail Panel — now a full component with comments & activity */}
       {activeTask && <TaskDetailPanel />}
     </div>
-  );
+    );
+  };
 
   /* ── TEAM VIEW ── */
   const TeamView = () => (
@@ -1961,7 +2019,7 @@ export default function App() {
     const [form, setForm] = useState({
       title:   taskModal?.title  || '',
       desc:    taskModal?.desc   || taskModal?.description || '',
-      dept:    taskModal?.dept   || 'bu',
+      dept:    taskModal?.dept   || '',
       ass:     taskModal?.ass    || Object.keys(MEMBER_NAMES)[0] || '',
       pri:     taskModal?.pri    || 'm',
       // toDateInput converts "Apr 5, 2025" → "2025-04-05" so the picker shows the existing date
@@ -2036,6 +2094,14 @@ export default function App() {
           <FormField label="Status">
             <select style={inputStyle} value={form.status} onChange={e => upd('status', e.target.value)}>
               {COL_STAT.filter(s => s !== 'done').map(s => <option key={s} value={s}>{COL_LABELS[s]}</option>)}
+            </select>
+          </FormField>
+
+          {/* Department */}
+          <FormField label="Department">
+            <select style={inputStyle} value={form.dept} onChange={e => upd('dept', e.target.value)}>
+              <option value="">— None —</option>
+              {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </FormField>
         </div>
@@ -2432,15 +2498,14 @@ export default function App() {
   const views = { dashboard: <DashboardView />, projects: <ProjectsView />, tasks: <TaskBoardView />, team: <TeamView />, calendar: <CalendarView />, timeline: <TimelineView />, reports: <ReportsView />, notifs: <NotifsView />, chat: <ChatView />, admin: <AdminView /> };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: '#3D0A14', background: '#FFFFFF' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: T.text, background: T.bg, transition: 'background 0.2s, color 0.2s' }}>
       <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* ── Top header bar ── */}
-        <div style={{ height: 54, minHeight: 54, background: '#fff', borderBottom: '1px solid #E2E0E5', display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12, padding: isMobile ? '0 12px' : '0 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          {/* Hamburger — mobile only */}
+        <div style={{ height: 54, minHeight: 54, background: T.surface, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12, padding: isMobile ? '0 12px' : '0 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {isMobile && (
-            <button onClick={() => setMobileSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: COLORS.charcoal, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={() => setMobileSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: T.text, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <rect x="2" y="4" width="16" height="2" rx="1" fill="currentColor"/>
                 <rect x="2" y="9" width="16" height="2" rx="1" fill="currentColor"/>
@@ -2448,11 +2513,19 @@ export default function App() {
               </svg>
             </button>
           )}
-          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 14 : 16, fontWeight: 700, flex: 1, color: COLORS.charcoal, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{VTITLES[view]}</div>
-          {/* Search bar — hidden on mobile */}
+          {/* Title + job-title subtitle */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 13 : 15, fontWeight: 700, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2 }}>{VTITLES[view]}</div>
+            {authUser?.job_title && <div style={{ fontSize: 10, color: T.textSub, marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.6 }}>{authUser.job_title}</div>}
+          </div>
           {!isMobile && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#FBF3F4', border: '1px solid #E2E0E5', borderRadius: 6, padding: '6px 12px', color: '#5A5860', fontSize: 13, minWidth: 200 }}><Search size={13} style={{ opacity: 0.5 }} /> Search tasks, projects...</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: T.searchBg, border: `1px solid ${T.border}`, borderRadius: 6, padding: '6px 12px', color: T.textSub, fontSize: 13, minWidth: 200 }}><Search size={13} style={{ opacity: 0.5 }} /> Search tasks, projects...</div>
           )}
+          {/* Dark / Light mode toggle */}
+          <button onClick={() => setDarkMode(d => !d)} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{ background: T.filterIn, border: `1px solid ${T.border}`, borderRadius: 7, cursor: 'pointer', padding: '6px 9px', display: 'flex', alignItems: 'center', color: T.text, transition: 'background 0.15s' }}>
+            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
           <Btn sm onClick={() => setTaskModal({})}><Plus size={12} />{!isMobile && ' New Task'}</Btn>
           <Btn primary sm onClick={() => setProjModal({})}><Plus size={12} />{!isMobile && ' New Project'}</Btn>
         </div>
