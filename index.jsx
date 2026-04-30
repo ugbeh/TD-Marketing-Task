@@ -792,7 +792,7 @@ export default function App() {
     });
 
     return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 700, color: COLORS.charcoal, marginBottom: 4 }}>Hi, {authUser?.name?.split(' ')[0] || 'there'} 👋</h1>
         <p style={{ color: '#5A5860', fontSize: 12 }}>
@@ -877,7 +877,7 @@ export default function App() {
 
       {/* ── Team Workload — live from tasks + project memberships ── */}
       <Panel title="Team Workload — Active Work per Member" action="Manage →" actionClick={() => goNav('team')}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 4 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginTop: 4 }}>
           {workload.map(({ k, total }) => {
             const mc = MEMBER_COLORS[k] || { fg: '#848688' };
             return (
@@ -898,7 +898,7 @@ export default function App() {
 
   /* ── PROJECTS VIEW ── */
   const ProjectsView = () => (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div><h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, color: COLORS.charcoal, marginBottom: 4 }}>Project Management</h2><p style={{ color: '#5A5860', fontSize: 12 }}>Track all projects across the marketing team.</p></div>
         <div style={{ marginLeft: 'auto' }}><Btn primary sm onClick={() => setProjModal({})}><Plus size={12} /> New Project</Btn></div>
@@ -991,7 +991,7 @@ export default function App() {
     };
 
     return (
-      <div style={{ width: 380, minWidth: 380, background: '#fff', borderLeft: '1px solid #E2E0E5', height: 'calc(100vh - 54px)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ ...(isMobile ? { position: 'fixed', top: 54, left: 0, right: 0, bottom: 0, zIndex: 300, width: '100%' } : { width: 380, minWidth: 380, borderLeft: `1px solid ${T.border}`, height: 'calc(100vh - 54px)' }), background: T.surface, display: 'flex', flexDirection: 'column' }}>
 
         {/* ── Header ── */}
         <div style={{ padding: '16px 18px', borderBottom: '1px solid #E2E0E5', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
@@ -1121,23 +1121,23 @@ export default function App() {
     });
     return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: 'calc(100vh - 54px)' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
         {/* ── Filter tabs ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: 8, marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 5, flex: 1, overflowX: 'auto', flexWrap: isMobile ? 'nowrap' : 'wrap', WebkitOverflowScrolling: 'touch', paddingBottom: isMobile ? 2 : 0 }}>
             {TABS.map(t => {
               const on = activeFilter === t.f;
               return (
                 <div key={t.f} onClick={() => { setActiveFilter(t.f); setActiveTaskId(null); }}
-                  style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: on ? 600 : 400, border: `1px solid ${on ? COLORS.burg : T.filterBorder}`, color: on ? COLORS.burg : T.filterText, background: on ? COLORS.burgDim : T.filterIn, transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                  style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer', fontWeight: on ? 600 : 400, border: `1px solid ${on ? COLORS.burg : T.filterBorder}`, color: on ? COLORS.burg : T.filterText, background: on ? COLORS.burgDim : T.filterIn, transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {t.l}
                 </div>
               );
             })}
           </div>
-          <Btn primary sm onClick={() => setTaskModal({})}><Plus size={12} /> Add Task</Btn>
+          <Btn primary sm onClick={() => setTaskModal({})} style={{ flexShrink: 0, alignSelf: isMobile ? 'flex-start' : 'auto' }}><Plus size={12} /> Add Task</Btn>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(220px,1fr))', gap: 12, overflowX: 'auto', paddingBottom: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(5,minmax(${isMobile ? '82vw' : '220px'},1fr))`, gap: 12, overflowX: 'auto', paddingBottom: 10 }}>
           {COL_STAT.map(stat => {
             const filtered = getFiltered(stat);
             return (
@@ -1169,7 +1169,7 @@ export default function App() {
 
   /* ── TEAM VIEW ── */
   const TeamView = () => (
-    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: 20 }}>
+    <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? 12 : 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div>
           <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, color: COLORS.charcoal, marginBottom: 4 }}>Marketing Team</h2>
@@ -1318,11 +1318,13 @@ export default function App() {
       <div onClick={onClick} style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E2E0E5', cursor: 'pointer', color: '#5A5860' }}>{icon}</div>
     );
 
+    const cellH = isMobile ? 60 : 90;
+    const cellP = isMobile ? 4 : 7;
     return (
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
           {navBtn(() => setCurDate(new Date(year, month - 1, 1)), <ChevronLeft size={14} />)}
-          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 16, fontWeight: 700, color: COLORS.charcoal, minWidth: 180, textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Syne',sans-serif", fontSize: isMobile ? 14 : 16, fontWeight: 700, color: COLORS.charcoal, flex: 1, textAlign: 'center' }}>
             {MONTH_NAMES[month]} {year}
           </div>
           {navBtn(() => setCurDate(new Date(year, month + 1, 1)), <ChevronRight size={14} />)}
@@ -1332,31 +1334,28 @@ export default function App() {
           >Today</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 1, background: '#E2E0E5' }}>
-          {DAYS.map(d => <div key={d} style={{ background: '#fff', padding: 8, textAlign: 'center', fontSize: 11, color: '#918E98', textTransform: 'uppercase', letterSpacing: 0.5 }}>{d}</div>)}
-          {prevPad.map((d, i) => <div key={`p${i}`} style={{ background: '#F9F8FA', minHeight: 90, padding: 7 }}><div style={{ fontSize: 12, color: '#C4C2C8', marginBottom: 4 }}>{d}</div></div>)}
+          {DAYS.map(d => <div key={d} style={{ background: '#fff', padding: isMobile ? '6px 2px' : 8, textAlign: 'center', fontSize: isMobile ? 9 : 11, color: '#918E98', textTransform: 'uppercase', letterSpacing: 0.5 }}>{isMobile ? d[0] : d}</div>)}
+          {prevPad.map((d, i) => <div key={`p${i}`} style={{ background: '#F9F8FA', minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
           {monthArr.map(d => (
-            <div key={d} style={{ background: isToday(d) ? COLORS.burgDim : '#fff', minHeight: 90, padding: 7 }}>
-              <div style={{ fontSize: 12, color: isToday(d) ? COLORS.burg : '#5A5860', marginBottom: 4, fontWeight: isToday(d) ? 700 : 400 }}>{d}</div>
+            <div key={d} style={{ background: isToday(d) ? COLORS.burgDim : '#fff', minHeight: cellH, padding: cellP }}>
+              <div style={{ fontSize: 11, color: isToday(d) ? COLORS.burg : '#5A5860', marginBottom: 2, fontWeight: isToday(d) ? 700 : 400 }}>{d}</div>
               {(eventMap[d] || []).map(ev => {
-                // Projects get a left-border chip using their brand colour;
-                // tasks get the standard coloured background chip.
                 const isProj = ev._kind === 'project';
                 return (
                   <div key={ev.id} style={{
-                    fontSize: 10, padding: '2px 5px', borderRadius: 3, marginBottom: 2,
+                    fontSize: isMobile ? 8 : 10, padding: '2px 4px', borderRadius: 3, marginBottom: 2,
                     background:  isProj ? `${ev._color}18` : EV_BG[ev._ci],
                     color:       isProj ? ev._color        : EV_COLOR[ev._ci],
                     borderLeft:  isProj ? `2px solid ${ev._color}` : 'none',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
-                    {/* Type badge prefix so users know task vs. project and the category */}
-                    <span style={{ opacity: 0.75, marginRight: 3 }}>[{ev._type}]</span>{ev.title}
+                    {!isMobile && <span style={{ opacity: 0.75, marginRight: 3 }}>[{ev._type}]</span>}{ev.title}
                   </div>
                 );
               })}
             </div>
           ))}
-          {nextPad.map((d, i) => <div key={`n${i}`} style={{ background: '#F9F8FA', minHeight: 90, padding: 7 }}><div style={{ fontSize: 12, color: '#C4C2C8', marginBottom: 4 }}>{d}</div></div>)}
+          {nextPad.map((d, i) => <div key={`n${i}`} style={{ background: '#F9F8FA', minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
         </div>
         {Object.keys(eventMap).length === 0 && (
           <p style={{ textAlign: 'center', color: '#918E98', fontSize: 13, marginTop: 24 }}>No tasks or projects due this month.</p>
@@ -1409,7 +1408,7 @@ export default function App() {
     }
 
     return (
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
         <div style={{ marginBottom: 16 }}>
           <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, color: COLORS.charcoal, marginBottom: 4 }}>Project Timeline</h2>
           <p style={{ color: '#5A5860', fontSize: 12 }}>Gantt-style overview of your projects based on their start and due dates.</p>
@@ -1504,7 +1503,7 @@ export default function App() {
   const _inReviewTasks  = tasks.filter(t => t.status === 'review').length;
 
   const ReportsView = () => (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, color: COLORS.charcoal, marginBottom: 4 }}>Reports & Analytics</h2>
         {/* Subtitle is dynamic — shows current month/year instead of a hardcoded date */}
@@ -1512,7 +1511,7 @@ export default function App() {
       </div>
 
       {/* ── Stat cards — all values come from live DB data ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
         <StatCard label="Total Tasks"     value={String(_totalTasks)}     delta={_completedTasks + ' completed'}                                           up={_completedTasks > 0} />
         <StatCard label="Completed"       value={String(_completedTasks)} delta={_totalTasks > 0 ? Math.round(_completedTasks / _totalTasks * 100) + '% of total' : '0% of total'} up={_completedTasks > 0} />
         <StatCard label="Active Projects" value={String(_activeProjects)} delta={projects.length + ' total projects'}                                       up={_activeProjects > 0} />
@@ -1520,7 +1519,7 @@ export default function App() {
       </div>
 
       {/* ── Row 1: Tasks by due month + Task status pie ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Replaces hardcoded "Dashboards Delivered" line chart with real task due-date distribution */}
         <Panel title="Tasks by Due Month — Last 6 Months">
           <div style={{ height: 220 }}>
@@ -1552,7 +1551,7 @@ export default function App() {
       </div>
 
       {/* ── Row 2: Team workload + Tasks by priority ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Replaces hardcoded "Pipeline Runs by Type" with real per-assignee task counts */}
         <Panel title="Team Workload — Tasks per Member">
           {workloadData.length === 0
@@ -1596,7 +1595,7 @@ export default function App() {
             <BarChart layout="vertical" data={projProgressData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
               <XAxis type="number" domain={[0, 100]} tick={{ fill: '#848688', fontSize: 11 }} tickFormatter={v => v + '%'} />
-              <YAxis type="category" dataKey="name" tick={{ fill: '#848688', fontSize: 11 }} width={160} />
+              <YAxis type="category" dataKey="name" tick={{ fill: '#848688', fontSize: 11 }} width={isMobile ? 100 : 160} />
               <Tooltip formatter={v => v + '%'} />
               <Bar dataKey="pct" name="Progress" radius={[0, 4, 4, 0]}>
                 {projProgressData.map((d, i) => <Cell key={i} fill={d.fill} />)}
@@ -1844,7 +1843,7 @@ export default function App() {
         </div>
 
         {/* ── Message input ── */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid #E2E0E5', background: '#fff' }}>
+        <div style={{ padding: isMobile ? '10px 12px' : '12px 20px', borderTop: '1px solid #E2E0E5', background: '#fff' }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
             <Avatar k={authUser?.initials || 'SO'} size={32} style={{ flexShrink: 0, marginBottom: 1 }} />
             <div style={{ flex: 1 }}>
