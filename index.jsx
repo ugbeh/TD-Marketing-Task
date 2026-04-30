@@ -107,16 +107,22 @@ const COL_LABELS = { backlog: 'Backlog', progress: 'In Progress', review: 'In Re
 const COL_DOT = { backlog: COLORS.gray, progress: COLORS.blue, review: COLORS.amber, approved: COLORS.purple, done: COLORS.green };
 
 // ── Department categories — edit this list to match your team ──
-const DEPT_OPTIONS = ['SEO', 'Social', 'Video', 'Content', 'Digital', 'OEM', 'Analytics', 'General'];
+const DEPT_OPTIONS = [
+  'Marketing Campaigns', 'Digital Strategies', 'SEO', 'Graphics Designs',
+  'Content', 'Social', 'Telemarketing', 'OEM Activities', 'Ecommerce Manager', 'Video', 'PR',
+];
 const DEPT_COLORS = {
-  SEO:       { bg: COLORS.blueD,   fg: COLORS.blue   },
-  Social:    { bg: COLORS.tealD,   fg: COLORS.teal   },
-  Video:     { bg: COLORS.purpleD, fg: COLORS.purple },
-  Content:   { bg: COLORS.amberD,  fg: COLORS.amber  },
-  Digital:   { bg: COLORS.coralD,  fg: COLORS.coral  },
-  OEM:       { bg: COLORS.greenD,  fg: COLORS.green  },
-  Analytics: { bg: COLORS.blueD,   fg: COLORS.blue   },
-  General:   { bg: '#EBEAED',      fg: '#848688'     },
+  'Marketing Campaigns': { bg: COLORS.burgDim,  fg: COLORS.burg    },
+  'Digital Strategies':  { bg: COLORS.blueD,    fg: COLORS.blue    },
+  'SEO':                 { bg: COLORS.tealD,    fg: COLORS.teal    },
+  'Graphics Designs':    { bg: COLORS.pinkD,    fg: COLORS.pink    },
+  'Content':             { bg: COLORS.amberD,   fg: COLORS.amber   },
+  'Social':              { bg: COLORS.coralD,   fg: COLORS.coral   },
+  'Telemarketing':       { bg: COLORS.purpleD,  fg: COLORS.purple  },
+  'OEM Activities':      { bg: COLORS.greenD,   fg: COLORS.green   },
+  'Ecommerce Manager':   { bg: COLORS.blueD,    fg: COLORS.blue    },
+  'Video':               { bg: COLORS.purpleD,  fg: COLORS.purple  },
+  'PR':                  { bg: COLORS.redD,     fg: COLORS.red     },
 };
 
 const NAV_ITEMS = [
@@ -1096,12 +1102,11 @@ export default function App() {
       const c = (t.collabs || []).concat((t.collaborators || []).map(x => x.initials ?? x));
       return c.includes(myInitials) && (t.ass || t.assignee_initials) !== myInitials;
     });
-    const activeDepts = [...new Set(tasks.map(t => t.dept).filter(Boolean))];
     const TABS = [
       { f: 'all',    l: 'All Tasks' },
       { f: 'mine',   l: `My Tasks (${myTasks.length})` },
       { f: 'collab', l: `Collaborating (${collabTasks.length})` },
-      ...activeDepts.map(d => ({ f: `dept:${d}`, l: d })),
+      ...DEPT_OPTIONS.map(d => ({ f: `dept:${d}`, l: d })),
     ];
     const getFiltered = stat => tasks.filter(t => {
       if (t.status !== stat) return false;
