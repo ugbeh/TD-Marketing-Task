@@ -2,11 +2,14 @@
 // Auth endpoints — login, current user, forgot password, reset password.
 
 const router = require('express').Router();
-const { login, getMe, forgotPassword, resetPassword, autoLogin } = require('../controllers/authController');
+const { login, getMe, forgotPassword, resetPassword, autoLogin, register } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/auth');
 
 // POST /api/auth/login            — public
 router.post('/login', login);
+
+// POST /api/auth/register         — public
+router.post('/register', register);
 
 // GET  /api/auth/me               — protected
 router.get('/me', requireAuth, getMe);

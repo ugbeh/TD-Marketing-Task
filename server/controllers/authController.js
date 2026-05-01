@@ -208,6 +208,67 @@ async function resetPassword(req, res) {
   }
 }
 
+// ── POST /api/auth/register ──────────────────────────────────
+// Body: { name, email, password, job_title? }
+// Public — creates a member account and returns a JWT so the user is
+// immediately logged in without a second round-trip.
+async function register(req, res) {
+  const { name, email, password, job_title = '' } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email and password are required.' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  try {
+    const existing = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase().trim()]
+    );
+    if (existing.rows[0]) {
+      return res.status(409).json({ error: 'An account with that email already exists.' });
+    }
+
+    // Auto-generate initials from first letters of each name word (max 2 chars)
+    const base = name.trim().split(/\s+/).map(w => w[0].toUpperCase()).slice(0, 2).join('');
+    let initials = base;
+    let suffix = 2;
+    // If another user already has those initials, append a number (e.g. JA2, JA3)
+    while (true) {
+      const clash = await pool.query('SELECT id FROM users WHERE initials = $1', [initials]);
+      if (!clash.rows[0]) break;
+      initials = base.slice(0, 1) + suffix++;
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `INSERT INTO users (initials, name, email, password_hash, role, job_title, status)
+       VALUES ($1, $2, $3, $4, 'member', $5, 'active')
+       RETURNING id, initials, name, email, role, job_title, status, avatar_url`,
+      [initials, name.trim(), email.toLowerCase().trim(), hash, job_title.trim()]
+    );
+
+    const user = result.rows[0];
+    const payload = {
+      id: user.id, email: user.email, name: user.name,
+      initials: user.initials, role: user.role,
+      job_title: user.job_title, status: user.status, avatar_url: user.avatar_url,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    });
+
+    console.log(`✅  New registration: ${user.name} (${user.initials})`);
+    res.status(201).json({ token, user: payload });
+
+  } catch (err) {
+    console.error('register error:', err.message);
+    res.status(500).json({ error: 'Server error during registration.' });
+  }
+}
+
 // ── POST /api/auth/auto ──────────────────────────────────────
 // No credentials needed — returns a 30-day JWT for the shared
 // Marketing Team account so the dashboard opens without a login prompt.
@@ -235,4 +296,4 @@ async function autoLogin(req, res) {
   }
 }
 
-module.exports = { login, getMe, forgotPassword, resetPassword, autoLogin };
+module.exports = { login, getMe, forgotPassword, resetPassword, autoLogin, register };

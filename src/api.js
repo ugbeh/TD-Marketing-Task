@@ -18,6 +18,7 @@ api.interceptors.request.use((config) => {
 
 // ── Auth ──────────────────────────────────────────────────────
 export const login          = (email, password) => api.post('/auth/login', { email, password });
+export const register       = (data)            => api.post('/auth/register', data);
 export const autoLogin      = ()                => api.post('/auth/auto');
 export const getMe          = ()                => api.get('/auth/me');
 export const forgotPassword = (email)           => api.post('/auth/forgot-password', { email });

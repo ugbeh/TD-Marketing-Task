@@ -49,6 +49,13 @@ export function AuthProvider({ children }) {
     return res.data.user;
   };
 
+  // Call this after registration — server already validated and returned the token
+  const loginWithToken = (token, user) => {
+    localStorage.setItem('token', token);
+    sessionStorage.removeItem('signed_out');
+    setUser(user);
+  };
+
   // Call this to sign out — sets a flag so auto-login doesn't fire until the browser tab closes
   const logout = () => {
     localStorage.removeItem('token');
@@ -57,7 +64,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, loginWithToken, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

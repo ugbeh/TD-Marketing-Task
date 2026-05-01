@@ -15,7 +15,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './AuthContext';
-import { forgotPassword as apiForgotPassword } from './api';
+import { forgotPassword as apiForgotPassword, register as apiRegister } from './api';
 
 // ── Logo path ─────────────────────────────────────────────────
 const LOGO_PATH = '/img/logo-white.png';
@@ -50,9 +50,9 @@ const AVATAR_COLORS = {
 };
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loginWithToken } = useAuth();
 
-  // ── Which form is showing: 'login' or 'forgot' ───────────────
+  // ── Which form is showing: 'login', 'signup', or 'forgot' ────
   const [screen, setScreen] = useState('login');
 
   // ── Sign in state ────────────────────────────────────────────
@@ -67,6 +67,40 @@ export default function Login() {
   const [forgotSent, setForgotSent]     = useState(false);
   const [forgotError, setForgotError]   = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+
+  // ── Sign up state ─────────────────────────────────────────────
+  const [signup, setSignup] = useState({ name: '', email: '', jobTitle: '', password: '', confirm: '' });
+  const [signupError, setSignupError]   = useState('');
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [showSignupPass, setShowSignupPass]     = useState(false);
+  const [showSignupConfirm, setShowSignupConfirm] = useState(false);
+
+  const updSignup = (k, v) => setSignup(s => ({ ...s, [k]: v }));
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setSignupError('');
+    if (signup.password !== signup.confirm) {
+      return setSignupError('Passwords do not match.');
+    }
+    if (signup.password.length < 8) {
+      return setSignupError('Password must be at least 8 characters.');
+    }
+    setSignupLoading(true);
+    try {
+      const res = await apiRegister({
+        name:      signup.name.trim(),
+        email:     signup.email.trim(),
+        password:  signup.password,
+        job_title: signup.jobTitle.trim(),
+      });
+      loginWithToken(res.data.token, res.data.user);
+    } catch (err) {
+      setSignupError(err.response?.data?.error || 'Registration failed. Please try again.');
+    } finally {
+      setSignupLoading(false);
+    }
+  };
 
   // ── Sign in handler ──────────────────────────────────────────
   const handleSubmit = async (e) => {
@@ -271,6 +305,18 @@ export default function Login() {
                 </button>
               </form>
 
+              {/* Sign up link */}
+              <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: COLORS.gray }}>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setScreen('signup'); setError(''); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: COLORS.burg, fontWeight: 600, padding: 0, textDecoration: 'underline' }}
+                >
+                  Create one
+                </button>
+              </p>
+
             </>
           )}
 
@@ -369,6 +415,128 @@ export default function Login() {
                   </form>
                 </>
               )}
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════
+              SIGN UP FORM
+          ════════════════════════════════════════════════════ */}
+          {screen === 'signup' && (
+            <>
+              <button
+                onClick={() => { setScreen('login'); setSignupError(''); setSignup({ name: '', email: '', jobTitle: '', password: '', confirm: '' }); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: COLORS.gray, padding: 0, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                ← Back to sign in
+              </button>
+
+              <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 700, color: COLORS.charcoal, marginBottom: 8 }}>
+                Create your account
+              </h2>
+              <p style={{ fontSize: 13, color: COLORS.gray, marginBottom: 28 }}>
+                Join the TD Africa Marketing team dashboard.
+              </p>
+
+              <form onSubmit={handleSignup}>
+                {/* Full Name */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, color: '#5A5860', display: 'block', marginBottom: 6 }}>Full name</label>
+                  <input
+                    type="text" value={signup.name}
+                    onChange={e => updSignup('name', e.target.value)}
+                    placeholder="e.g. Amaka Johnson"
+                    required autoFocus style={inputStyle}
+                  />
+                </div>
+
+                {/* Email */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, color: '#5A5860', display: 'block', marginBottom: 6 }}>Email address</label>
+                  <input
+                    type="email" value={signup.email}
+                    onChange={e => updSignup('email', e.target.value)}
+                    placeholder="you@tdafrica.com"
+                    required style={inputStyle}
+                  />
+                </div>
+
+                {/* Job Title */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, color: '#5A5860', display: 'block', marginBottom: 6 }}>
+                    Job title <span style={{ color: COLORS.gray, fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <input
+                    type="text" value={signup.jobTitle}
+                    onChange={e => updSignup('jobTitle', e.target.value)}
+                    placeholder="e.g. SEO Manager"
+                    style={inputStyle}
+                  />
+                </div>
+
+                {/* Password */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, color: '#5A5860', display: 'block', marginBottom: 6 }}>Password <span style={{ color: COLORS.gray, fontWeight: 400 }}>(min 8 characters)</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showSignupPass ? 'text' : 'password'}
+                      value={signup.password}
+                      onChange={e => updSignup('password', e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      style={{ ...inputStyle, padding: '10px 42px 10px 14px' }}
+                    />
+                    <button type="button" onClick={() => setShowSignupPass(v => !v)}
+                      style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: COLORS.gray, padding: 0, display: 'flex', alignItems: 'center' }}>
+                      {showSignupPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 12, color: '#5A5860', display: 'block', marginBottom: 6 }}>Confirm password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showSignupConfirm ? 'text' : 'password'}
+                      value={signup.confirm}
+                      onChange={e => updSignup('confirm', e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      style={{ ...inputStyle, padding: '10px 42px 10px 14px' }}
+                    />
+                    <button type="button" onClick={() => setShowSignupConfirm(v => !v)}
+                      style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: COLORS.gray, padding: 0, display: 'flex', alignItems: 'center' }}>
+                      {showSignupConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {signupError && (
+                  <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: '#FCEAEA', border: '1px solid #F5C6C6', fontSize: 13, color: '#D63B3B' }}>
+                    {signupError}
+                  </div>
+                )}
+
+                {/* Submit */}
+                <button
+                  type="submit" disabled={signupLoading}
+                  style={{ width: '100%', padding: '11px 0', borderRadius: 8, background: signupLoading ? '#6B1221' : COLORS.burg, color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: signupLoading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans',sans-serif", transition: 'background .15s' }}
+                >
+                  {signupLoading ? 'Creating account…' : 'Create account'}
+                </button>
+              </form>
+
+              <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: COLORS.gray }}>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setScreen('login'); setSignupError(''); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: COLORS.burg, fontWeight: 600, padding: 0, textDecoration: 'underline' }}
+                >
+                  Sign in
+                </button>
+              </p>
             </>
           )}
 
