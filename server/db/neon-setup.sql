@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   status      VARCHAR(40)  DEFAULT 'backlog',
   priority    VARCHAR(10)  DEFAULT 'm',
-  dept        VARCHAR(10)  DEFAULT 'bu',
+  dept        VARCHAR(60)  DEFAULT '',
   due_date    VARCHAR(40),
   assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   project_id  INTEGER REFERENCES projects(id),

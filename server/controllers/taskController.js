@@ -79,7 +79,7 @@ async function getTasks(req, res) {
 async function createTask(req, res) {
   const {
     title, description, status = 'backlog', priority = 'm',
-    dept = 'bu', due_date, assignee_id, project_id, collaborators = []
+    dept = '', due_date, assignee_id, project_id, collaborators = []
   } = req.body;
 
   if (!title) {
