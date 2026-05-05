@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff, Sun, Moon, Activity } from "lucide-react";
 import { useAuth } from './src/AuthContext';
 import { useSocket, showDesktopNotification } from './src/SocketContext';
 import * as API from './src/api';
@@ -135,6 +135,7 @@ const NAV_ITEMS = [
   { id: 'timeline', label: 'Timeline', icon: GitBranch },
   { id: 'chat', label: 'Team Chat', icon: MessageSquare, badge: 'chat' },
   { section: 'Analytics' },
+  { id: 'unitboard', label: 'Unit Board', icon: Activity },
   { id: 'reports', label: 'Reports', icon: BarChart3 },
   { id: 'notifs', label: 'Notifications', icon: Bell, badge: 'notifs' },
   // ── Admin section — only shown to users with role = 'admin' ──
@@ -143,7 +144,7 @@ const NAV_ITEMS = [
   { id: 'admin', label: 'Admin Panel', icon: ShieldCheck, adminOnly: true },
 ];
 
-const VTITLES = { dashboard: 'Overview', projects: 'Project Management', tasks: 'Task Board', team: 'Marketing Team', calendar: 'Calendar', timeline: 'Project Timeline', reports: 'Reports & Analytics', notifs: 'Notifications', chat: 'Team Chat', admin: 'Admin Panel' };
+const VTITLES = { dashboard: 'Overview', projects: 'Project Management', tasks: 'Task Board', team: 'Marketing Team', calendar: 'Calendar', timeline: 'Project Timeline', unitboard: 'Unit Board', reports: 'Reports & Analytics', notifs: 'Notifications', chat: 'Team Chat', admin: 'Admin Panel' };
 
 // NOTE: Static data removed — all data now loads from the database via the API.
 // See the loadData() function inside the App component below.
@@ -1334,15 +1335,24 @@ export default function App() {
           >Today</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 1, background: '#E2E0E5' }}>
-          {DAYS.map(d => <div key={d} style={{ background: '#fff', padding: isMobile ? '6px 2px' : 8, textAlign: 'center', fontSize: isMobile ? 9 : 11, color: '#918E98', textTransform: 'uppercase', letterSpacing: 0.5 }}>{isMobile ? d[0] : d}</div>)}
-          {prevPad.map((d, i) => <div key={`p${i}`} style={{ background: '#F9F8FA', minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
+          {DAYS.map(d => <div key={d} style={{ background: T.surface, padding: isMobile ? '6px 2px' : 8, textAlign: 'center', fontSize: isMobile ? 9 : 11, color: '#918E98', textTransform: 'uppercase', letterSpacing: 0.5 }}>{isMobile ? d[0] : d}</div>)}
+          {prevPad.map((d, i) => <div key={`p${i}`} style={{ background: T.bg, minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
           {monthArr.map(d => (
-            <div key={d} style={{ background: isToday(d) ? COLORS.burgDim : '#fff', minHeight: cellH, padding: cellP }}>
-              <div style={{ fontSize: 11, color: isToday(d) ? COLORS.burg : '#5A5860', marginBottom: 2, fontWeight: isToday(d) ? 700 : 400 }}>{d}</div>
+            <div key={d}
+              onClick={() => setTaskModal({ due: `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}` })}
+              title={`Add task for ${_MONTHS[month]} ${d}`}
+              style={{ background: isToday(d) ? COLORS.burgDim : T.surface, minHeight: cellH, padding: cellP, cursor: 'pointer', position: 'relative', transition: 'background 0.1s' }}
+              onMouseEnter={e => { if (!isToday(d)) e.currentTarget.style.background = T.surface2; }}
+              onMouseLeave={e => { if (!isToday(d)) e.currentTarget.style.background = T.surface; }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                <div style={{ fontSize: 11, color: isToday(d) ? COLORS.burg : T.text, fontWeight: isToday(d) ? 700 : 400 }}>{d}</div>
+                {!isMobile && <div style={{ fontSize: 10, color: COLORS.burg, opacity: 0.45, fontWeight: 700, lineHeight: 1 }}>+</div>}
+              </div>
               {(eventMap[d] || []).map(ev => {
                 const isProj = ev._kind === 'project';
                 return (
-                  <div key={ev.id} style={{
+                  <div key={ev.id} onClick={e => e.stopPropagation()} style={{
                     fontSize: isMobile ? 8 : 10, padding: '2px 4px', borderRadius: 3, marginBottom: 2,
                     background:  isProj ? `${ev._color}18` : EV_BG[ev._ci],
                     color:       isProj ? ev._color        : EV_COLOR[ev._ci],
@@ -1355,11 +1365,11 @@ export default function App() {
               })}
             </div>
           ))}
-          {nextPad.map((d, i) => <div key={`n${i}`} style={{ background: '#F9F8FA', minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
+          {nextPad.map((d, i) => <div key={`n${i}`} style={{ background: T.bg, minHeight: cellH, padding: cellP }}><div style={{ fontSize: 11, color: '#C4C2C8', marginBottom: 2 }}>{d}</div></div>)}
         </div>
-        {Object.keys(eventMap).length === 0 && (
-          <p style={{ textAlign: 'center', color: '#918E98', fontSize: 13, marginTop: 24 }}>No tasks or projects due this month.</p>
-        )}
+        <p style={{ textAlign: 'center', color: T.textSub, fontSize: 11, marginTop: 10, opacity: 0.7 }}>
+          Click any date to add a task with that due date
+        </p>
       </div>
     );
   };
@@ -1440,6 +1450,160 @@ export default function App() {
   };
 
   /* ── REPORTS VIEW ── */
+  /* ── UNIT BOARD VIEW ── */
+  const UnitBoardView = () => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+
+    const parseToDate = (str) => {
+      if (!str) return null;
+      const m = str.match(/([A-Za-z]{3})\s+(\d{1,2})(?:,?\s*(\d{4}))?/);
+      if (!m) return null;
+      const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(m[1]);
+      if (mo < 0) return null;
+      return new Date(m[3] ? parseInt(m[3]) : today.getFullYear(), mo, parseInt(m[2]));
+    };
+
+    const isOverdue = t => t.status !== 'done' && (() => { const d = parseToDate(t.due_date || t.due); return d && d < today; })();
+
+    // Per-department stats
+    const deptStats = DEPT_OPTIONS.map(dept => {
+      const dt = tasks.filter(t => t.dept === dept);
+      return {
+        dept,
+        total:      dt.length,
+        completed:  dt.filter(t => t.status === 'done').length,
+        pending:    dt.filter(t => t.status === 'backlog').length,
+        inProgress: dt.filter(t => ['progress','review','approved'].includes(t.status)).length,
+        overdue:    dt.filter(isOverdue).length,
+        incomplete: dt.filter(t => t.status !== 'done').length,
+      };
+    });
+
+    // Overall totals (all tasks regardless of dept)
+    const ov = {
+      total:     tasks.length,
+      completed: tasks.filter(t => t.status === 'done').length,
+      incomplete:tasks.filter(t => t.status !== 'done').length,
+      overdue:   tasks.filter(isOverdue).length,
+      pending:   tasks.filter(t => t.status === 'backlog').length,
+    };
+
+    // Chart data — only depts that have at least one task
+    const chartData = deptStats
+      .filter(d => d.total > 0)
+      .map(d => ({
+        name:        d.dept.length > 11 ? d.dept.slice(0, 9) + '…' : d.dept,
+        fullName:    d.dept,
+        Completed:   d.completed,
+        'In Progress': d.inProgress,
+        Pending:     d.pending,
+        Overdue:     d.overdue,
+      }));
+
+    const BAR_COLORS = { Completed: COLORS.green, 'In Progress': COLORS.blue, Pending: COLORS.gray, Overdue: COLORS.red };
+
+    return (
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 20 }}>
+        <div style={{ marginBottom: 20 }}>
+          <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 18, fontWeight: 700, color: COLORS.charcoal, marginBottom: 4 }}>Unit Board</h2>
+          <p style={{ color: '#5A5860', fontSize: 12 }}>Live task summary across all departments — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
+        </div>
+
+        {/* ── Overall stat cards ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(5,1fr)', gap: 12, marginBottom: 24 }}>
+          {[
+            { label: 'Total Tasks',      value: ov.total,      color: COLORS.blue,   bg: COLORS.blueD   },
+            { label: 'Completed',        value: ov.completed,  color: COLORS.green,  bg: COLORS.greenD  },
+            { label: 'In Progress',      value: ov.incomplete - ov.pending, color: COLORS.burg, bg: COLORS.burgDim },
+            { label: 'Pending',          value: ov.pending,    color: COLORS.amber,  bg: COLORS.amberD  },
+            { label: 'Overdue',          value: ov.overdue,    color: COLORS.red,    bg: COLORS.redD    },
+          ].map(({ label, value, color, bg }) => (
+            <div key={label} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div style={{ fontSize: 11, color: T.textSub, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+              <div style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Syne',sans-serif", color }}>{value}</div>
+              <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: T.border }}>
+                <div style={{ height: '100%', borderRadius: 2, background: color, width: ov.total > 0 ? `${Math.round((value / ov.total) * 100)}%` : '0%', transition: 'width 0.4s' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Stacked bar chart ── */}
+        {chartData.length > 0 ? (
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: '16px 18px', marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 }}>Tasks by Department</div>
+            <div style={{ fontSize: 11, color: T.textSub, marginBottom: 14 }}>Breakdown of task status per unit</div>
+            <div style={{ height: 280, overflowX: 'auto' }}>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={chartData} barSize={isMobile ? 10 : 16}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: T.textSub, fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: T.textSub, fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip
+                    formatter={(val, name, props) => [val, name]}
+                    labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName || ''}
+                    contentStyle={{ borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 12 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                  {Object.entries(BAR_COLORS).map(([key, color]) => (
+                    <Bar key={key} dataKey={key} stackId="a" fill={color} radius={key === 'Overdue' ? [4,4,0,0] : [0,0,0,0]} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : (
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: 32, textAlign: 'center', color: T.textSub, marginBottom: 24 }}>
+            <Activity size={32} style={{ opacity: 0.3, marginBottom: 8 }} />
+            <div style={{ fontSize: 13 }}>No tasks yet. Create tasks and assign them to departments to see stats here.</div>
+          </div>
+        )}
+
+        {/* ── Per-department cards ── */}
+        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 12 }}>Department Breakdown</div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap: 14 }}>
+          {deptStats.map(({ dept, total, completed, pending, inProgress, overdue, incomplete }) => {
+            const dc = DEPT_COLORS[dept] || { bg: '#EBEAED', fg: '#848688' };
+            const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+            if (total === 0) return null;
+            return (
+              <div key={dept} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: dc.bg, color: dc.fg }}>{dept}</span>
+                  <span style={{ fontSize: 11, color: T.textSub }}>{total} task{total !== 1 ? 's' : ''}</span>
+                </div>
+                {/* Completion bar */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.textSub, marginBottom: 4 }}>
+                    <span>Completion</span><span style={{ fontWeight: 600, color: COLORS.green }}>{pct}%</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: T.border }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: pct >= 70 ? COLORS.green : pct >= 40 ? COLORS.amber : COLORS.red, width: `${pct}%`, transition: 'width 0.4s' }} />
+                  </div>
+                </div>
+                {/* Stat row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                  {[
+                    { label: 'Done',     value: completed,  color: COLORS.green  },
+                    { label: 'Active',   value: inProgress, color: COLORS.blue   },
+                    { label: 'Pending',  value: pending,    color: COLORS.amber  },
+                    { label: 'Overdue',  value: overdue,    color: COLORS.red    },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 8, background: T.bg }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Syne',sans-serif", color }}>{value}</div>
+                      <div style={{ fontSize: 10, color: T.textSub, marginTop: 2 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   // Issue #7: All chart data now derived from live tasks/projects state.
   // Removed: hardcoded trafficData, pipelineData, qualityData.
   // Added: tasksByMonth (tasks grouped by due month), workloadData (tasks per assignee),
@@ -2499,7 +2663,7 @@ export default function App() {
   );
 
   /* ═══════ RENDER ═══════ */
-  const views = { dashboard: <DashboardView />, projects: <ProjectsView />, tasks: <TaskBoardView />, team: <TeamView />, calendar: <CalendarView />, timeline: <TimelineView />, reports: <ReportsView />, notifs: <NotifsView />, chat: <ChatView />, admin: <AdminView /> };
+  const views = { dashboard: <DashboardView />, projects: <ProjectsView />, tasks: <TaskBoardView />, team: <TeamView />, calendar: <CalendarView />, timeline: <TimelineView />, unitboard: <UnitBoardView />, reports: <ReportsView />, notifs: <NotifsView />, chat: <ChatView />, admin: <AdminView /> };
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: T.text, background: T.bg, transition: 'background 0.2s, color 0.2s' }}>
