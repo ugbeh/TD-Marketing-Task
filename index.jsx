@@ -722,7 +722,7 @@ export default function App() {
         onClick={() => setActiveTaskId(task.id)}
         style={{ background: T.cardBg, border: `1px solid ${activeTaskId === task.id ? COLORS.burg : T.cardBorder}`, borderRadius: 6, padding: '11px 12px', cursor: 'grab', opacity: isDone ? 0.6 : 1, boxShadow: activeTaskId === task.id ? `0 0 0 1px ${COLORS.burg}` : 'none', transition: 'all .15s' }}>
         <DeptTag dept={task.dept} />
-        <div style={{ fontSize: 13, fontWeight: 500, color: T.cardText, marginBottom: 7, lineHeight: 1.4 }}>{task.title}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: T.cardText, marginBottom: 7, lineHeight: 1.4 }}>{task.title}</div>
         {collabs.length > 0 && (
           <div style={{ display: 'flex', marginTop: 6 }}>
             {collabs.map(c => <Avatar key={c} k={c} size={16} style={{ marginLeft: -4, border: `1.5px solid ${T.cardBg}`, fontSize: 7 }} />)}
@@ -1135,7 +1135,7 @@ export default function App() {
               );
             })}
           </div>
-          <Btn primary sm onClick={() => setTaskModal({})} style={{ flexShrink: 0, alignSelf: isMobile ? 'flex-start' : 'auto' }}><Plus size={12} /> Add Task</Btn>
+          <Btn primary sm onClick={() => setTaskModal(activeFilter.startsWith('dept:') ? { dept: activeFilter.slice(5) } : {})} style={{ flexShrink: 0, alignSelf: isMobile ? 'flex-start' : 'auto' }}><Plus size={12} /> Add Task</Btn>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(5,minmax(${isMobile ? '82vw' : '220px'},1fr))`, gap: 12, overflowX: 'auto', paddingBottom: 10 }}>
           {COL_STAT.map(stat => {
@@ -1152,7 +1152,7 @@ export default function App() {
                     {COL_LABELS[stat]}
                     <span style={{ fontSize: 10, background: T.filterIn, color: T.textSub, borderRadius: 20, padding: '1px 7px', border: `1px solid ${T.border}` }}>{filtered.length}</span>
                   </div>
-                  {stat !== 'done' && <div onClick={() => setTaskModal({ status: stat })} style={{ cursor: 'pointer', color: T.textSub, fontSize: 18 }}>+</div>}
+                  {stat !== 'done' && <div onClick={() => setTaskModal({ status: stat, ...(activeFilter.startsWith('dept:') ? { dept: activeFilter.slice(5) } : {}) })} style={{ cursor: 'pointer', color: T.textSub, fontSize: 18 }}>+</div>}
                 </div>
                 <div style={{ padding: 10, flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {filtered.map(t => <TaskCard key={t.id} task={t} />)}
