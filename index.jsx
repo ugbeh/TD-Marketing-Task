@@ -278,6 +278,108 @@ const toProject = (p) => ({
   tags:    p.tags || [],
 });
 
+/* ═══════════════════════════════════════════════════════════════
+   TASK MODAL FORM — defined OUTSIDE App so React never unmounts
+   it mid-edit when App re-renders (e.g. on socket data:refresh).
+   Receives the four App-level values it needs as props.
+   ═══════════════════════════════════════════════════════════════ */
+function TaskModalForm({ taskModal, setTaskModal, projects, submitTask }) {
+  const editing = taskModal?.id;
+  const [form, setForm] = useState({
+    title:   taskModal?.title  || '',
+    desc:    taskModal?.desc   || taskModal?.description || '',
+    dept:    taskModal?.dept   || '',
+    ass:     taskModal?.ass    || Object.keys(MEMBER_NAMES)[0] || '',
+    pri:     taskModal?.pri    || 'm',
+    due:     toDateInput(taskModal?.due || taskModal?.due_date || ''),
+    status:  taskModal?.status || 'backlog',
+    camp:    taskModal?.camp   || taskModal?.project_name || (projects[0]?.name || ''),
+    collabs: taskModal?.collabs || [],
+  });
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const toggleFormCollab = (initials) =>
+    upd('collabs', form.collabs.includes(initials)
+      ? form.collabs.filter(k => k !== initials)
+      : [...form.collabs, initials]);
+
+  const handleSubmit = () => {
+    if (!form.title.trim()) return;
+    const data = { ...form, due: fromDateInput(form.due) };
+    submitTask(editing ? { ...data, id: taskModal.id } : data);
+  };
+
+  return (
+    <Modal open title={editing ? 'Edit Task' : 'Create New Task'}
+      subtitle="Fill in the details, assign it to a team member, and add collaborators."
+      onClose={() => setTaskModal(null)}
+      footer={<><Btn onClick={() => setTaskModal(null)}>Cancel</Btn><Btn primary onClick={handleSubmit}>{editing ? 'Save Changes' : 'Create Task'}</Btn></>}>
+
+      <FormField label="Task Title *">
+        <input style={inputStyle} value={form.title} onChange={e => upd('title', e.target.value)} placeholder="e.g. Write May SEO blog articles" autoFocus />
+      </FormField>
+
+      <FormField label="Description">
+        <textarea style={{ ...inputStyle, minHeight: 72, resize: 'vertical' }} value={form.desc} onChange={e => upd('desc', e.target.value)} placeholder="What needs to be done?" />
+      </FormField>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <FormField label="Project">
+          <select style={inputStyle} value={form.camp} onChange={e => upd('camp', e.target.value)}>
+            <option value="">— No project —</option>
+            {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+          </select>
+        </FormField>
+
+        <FormField label="Assigned To">
+          <select style={inputStyle} value={form.ass} onChange={e => upd('ass', e.target.value)}>
+            {Object.entries(MEMBER_NAMES).map(([k, n]) => (
+              <option key={k} value={k}>{n} — {MEMBER_ROLES[k]}</option>
+            ))}
+          </select>
+        </FormField>
+
+        <FormField label="Priority">
+          <select style={inputStyle} value={form.pri} onChange={e => upd('pri', e.target.value)}>
+            <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
+          </select>
+        </FormField>
+
+        <FormField label="Due Date">
+          <input type="date" style={inputStyle} value={form.due} onChange={e => upd('due', e.target.value)} />
+        </FormField>
+
+        <FormField label="Status">
+          <select style={inputStyle} value={form.status} onChange={e => upd('status', e.target.value)}>
+            {COL_STAT.filter(s => s !== 'done').map(s => <option key={s} value={s}>{COL_LABELS[s]}</option>)}
+          </select>
+        </FormField>
+
+        <FormField label="Department">
+          <select style={inputStyle} value={form.dept} onChange={e => upd('dept', e.target.value)}>
+            <option value="">— None —</option>
+            {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </FormField>
+      </div>
+
+      <FormField label="Collaborators">
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+          {Object.keys(MEMBER_NAMES).filter(k => k !== form.ass).map(k => {
+            const tagged = form.collabs.includes(k);
+            return (
+              <div key={k} onClick={() => toggleFormCollab(k)}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 5px', borderRadius: 20, background: tagged ? COLORS.burgDim : '#EBEAED', border: `1px solid ${tagged ? COLORS.burg : '#E2E0E5'}`, fontSize: 12, color: tagged ? COLORS.burg : '#5A5860', cursor: 'pointer', userSelect: 'none' }}>
+                <Avatar k={k} size={16} />{MEMBER_NAMES[k]}
+              </div>
+            );
+          })}
+        </div>
+      </FormField>
+    </Modal>
+  );
+}
+
 /* ═══════ MAIN APP ═══════ */
 export default function App() {
   const { user: authUser, logout }        = useAuth();
@@ -2175,122 +2277,8 @@ export default function App() {
     );
   };
 
-  /* ═══════ TASK MODAL FORM ═══════ */
-  // Used for both Create New Task and Edit Task.
-  // Changes vs original:
-  //   • Project dropdown now reads from live `projects` state (issue #1)
-  //   • Due Date uses input[type=date] → native calendar popup (issue #3)
-  //   • Date pre-populates correctly on edit — tries .due then .due_date (issue #5)
-  //   • Collaborators toggle section added directly in the modal (issues #1 & #4)
-  const TaskModalForm = () => {
-    const editing = taskModal?.id;
-    const [form, setForm] = useState({
-      title:   taskModal?.title  || '',
-      desc:    taskModal?.desc   || taskModal?.description || '',
-      dept:    taskModal?.dept   || '',
-      ass:     taskModal?.ass    || Object.keys(MEMBER_NAMES)[0] || '',
-      pri:     taskModal?.pri    || 'm',
-      // toDateInput converts "Apr 5, 2025" → "2025-04-05" so the picker shows the existing date
-      due:     toDateInput(taskModal?.due || taskModal?.due_date || ''),
-      status:  taskModal?.status || 'backlog',
-      // Use live project name; fall back to first project in state
-      camp:    taskModal?.camp   || taskModal?.project_name || (projects[0]?.name || ''),
-      collabs: taskModal?.collabs || [],
-    });
-    const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-    // Toggle a collaborator pill on/off inside the form (not saved until Submit)
-    const toggleFormCollab = (initials) =>
-      upd('collabs', form.collabs.includes(initials)
-        ? form.collabs.filter(k => k !== initials)
-        : [...form.collabs, initials]);
-
-    const handleSubmit = () => {
-      if (!form.title.trim()) return;
-      // Convert ISO date back to "Apr 5, 2025" before saving to DB
-      const data = { ...form, due: fromDateInput(form.due) };
-      submitTask(editing ? { ...data, id: taskModal.id } : data);
-    };
-
-    return (
-      <Modal open title={editing ? 'Edit Task' : 'Create New Task'}
-        subtitle="Fill in the details, assign it to a team member, and add collaborators."
-        onClose={() => setTaskModal(null)}
-        footer={<><Btn onClick={() => setTaskModal(null)}>Cancel</Btn><Btn primary onClick={handleSubmit}>{editing ? 'Save Changes' : 'Create Task'}</Btn></>}>
-
-        {/* Task title */}
-        <FormField label="Task Title *">
-          <input style={inputStyle} value={form.title} onChange={e => upd('title', e.target.value)} placeholder="e.g. Build DAX measures for sales report" />
-        </FormField>
-
-        {/* Description */}
-        <FormField label="Description">
-          <textarea style={{ ...inputStyle, minHeight: 72, resize: 'vertical' }} value={form.desc} onChange={e => upd('desc', e.target.value)} placeholder="What needs to be done?" />
-        </FormField>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {/* Project — live from DB via projects state, not hardcoded */}
-          <FormField label="Project">
-            <select style={inputStyle} value={form.camp} onChange={e => upd('camp', e.target.value)}>
-              <option value="">— No project —</option>
-              {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-            </select>
-          </FormField>
-
-          {/* Assigned To — live from team members */}
-          <FormField label="Assigned To">
-            <select style={inputStyle} value={form.ass} onChange={e => upd('ass', e.target.value)}>
-              {Object.entries(MEMBER_NAMES).map(([k, n]) => (
-                <option key={k} value={k}>{n} — {MEMBER_ROLES[k]}</option>
-              ))}
-            </select>
-          </FormField>
-
-          {/* Priority */}
-          <FormField label="Priority">
-            <select style={inputStyle} value={form.pri} onChange={e => upd('pri', e.target.value)}>
-              <option value="h">High</option><option value="m">Medium</option><option value="l">Low</option>
-            </select>
-          </FormField>
-
-          {/* Due Date — type=date opens native calendar popup (issue #3) */}
-          <FormField label="Due Date">
-            <input type="date" style={inputStyle} value={form.due} onChange={e => upd('due', e.target.value)} />
-          </FormField>
-
-          {/* Status */}
-          <FormField label="Status">
-            <select style={inputStyle} value={form.status} onChange={e => upd('status', e.target.value)}>
-              {COL_STAT.filter(s => s !== 'done').map(s => <option key={s} value={s}>{COL_LABELS[s]}</option>)}
-            </select>
-          </FormField>
-
-          {/* Department */}
-          <FormField label="Department">
-            <select style={inputStyle} value={form.dept} onChange={e => upd('dept', e.target.value)}>
-              <option value="">— None —</option>
-              {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          </FormField>
-        </div>
-
-        {/* Collaborators — clickable pills, anyone except the assignee (issues #1 & #4) */}
-        <FormField label="Collaborators">
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-            {Object.keys(MEMBER_NAMES).filter(k => k !== form.ass).map(k => {
-              const tagged = form.collabs.includes(k);
-              return (
-                <div key={k} onClick={() => toggleFormCollab(k)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 5px', borderRadius: 20, background: tagged ? COLORS.burgDim : '#EBEAED', border: `1px solid ${tagged ? COLORS.burg : '#E2E0E5'}`, fontSize: 12, color: tagged ? COLORS.burg : '#5A5860', cursor: 'pointer', userSelect: 'none' }}>
-                  <Avatar k={k} size={16} />{MEMBER_NAMES[k]}
-                </div>
-              );
-            })}
-          </div>
-        </FormField>
-      </Modal>
-    );
-  };
+  /* TaskModalForm is defined at module level (above App) to prevent
+     re-mounts on App re-renders wiping the user's in-progress form. */
 
   /* ═══════ PROJECT MODAL FORM ═══════ */
   // Changes vs original:
@@ -2699,7 +2687,7 @@ export default function App() {
         </div>
         {views[view]}
       </div>
-      {taskModal && <TaskModalForm />}
+      {taskModal && <TaskModalForm taskModal={taskModal} setTaskModal={setTaskModal} projects={projects} submitTask={submitTask} />}
       {projModal && <ProjModalForm />}
       {memberModal && <MemberModalForm />}
       {addMemberModal && <AddMemberForm />}
