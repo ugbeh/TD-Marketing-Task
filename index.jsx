@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff, Sun, Moon, Activity } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListTodo, Users, CalendarDays, GitBranch, BarChart3, Bell, Search, Plus, X, ChevronLeft, ChevronRight, Pencil, Trash2, AlertCircle, LogOut, ShieldCheck, MessageSquare, Send, Eye, EyeOff, Sun, Moon, Activity, Calendar } from "lucide-react";
 import { useAuth } from './src/AuthContext';
 import { useSocket, showDesktopNotification } from './src/SocketContext';
 import * as API from './src/api';
@@ -818,6 +818,25 @@ export default function App() {
   const TaskCard = ({ task }) => {
     const isDone = task.status === 'done';
     const collabs = (task.collabs || []).filter(c => c !== task.ass);
+    const dueDateStr = task.due_date || task.due || '';
+    const getDueBadge = (str) => {
+      if (!str) return null;
+      const m = str.match(/([A-Za-z]{3})\s+(\d{1,2})(?:,?\s*(\d{4}))?/);
+      if (!m) return { label: str, bg: '#EEF0F3', fg: '#5A5860' };
+      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const mo = MONTHS.indexOf(m[1]);
+      if (mo < 0) return { label: str, bg: '#EEF0F3', fg: '#5A5860' };
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(m[3] ? parseInt(m[3]) : today.getFullYear(), mo, parseInt(m[2]));
+      const diff = Math.round((d - today) / 864e5);
+      if (isDone) return { label: str, bg: '#EEF0F3', fg: '#918E98' };
+      if (diff < 0)   return { label: `Overdue · ${str}`, bg: '#FDECEA', fg: '#C0392B' };
+      if (diff === 0) return { label: `Today · ${str}`,   bg: '#FDECEA', fg: '#C0392B' };
+      if (diff === 1) return { label: `Tomorrow · ${str}`,bg: '#FEF3CD', fg: '#B7770D' };
+      if (diff <= 7)  return { label: `${str} · ${diff}d`,bg: '#FEF3CD', fg: '#B7770D' };
+      return                 { label: str,                 bg: '#E8F4EA', fg: '#2D7A3A' };
+    };
+    const badge = getDueBadge(dueDateStr);
     return (
       <div draggable
         onDragStart={e => { e.currentTarget.style.opacity = '0.35'; onDragStart(e, task.id); }}
@@ -831,8 +850,16 @@ export default function App() {
             {collabs.map(c => <Avatar key={c} k={c} size={16} style={{ marginLeft: -4, border: `1.5px solid ${T.cardBg}`, fontSize: 7 }} />)}
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-          <span style={{ fontSize: 10, color: T.textSub, flex: 1 }}>{task.due || 'No date'}</span>
+        {badge ? (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 7, marginBottom: 2, background: badge.bg, color: badge.fg, borderRadius: 4, padding: '3px 7px', fontSize: 11, fontWeight: 600 }}>
+            <Calendar size={10} />
+            {badge.label}
+          </div>
+        ) : (
+          <div style={{ marginTop: 7, marginBottom: 2, fontSize: 11, color: T.textSub }}>No due date</div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <div style={{ flex: 1 }} />
           <Avatar k={task.ass} size={18} />
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: PRIORITY_DOT[task.pri] || COLORS.green }} />
         </div>
